@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logistics Company — Login</title>
+    <link rel="stylesheet" href="css/login.css" />
+</head>
+<body>
+<div class="background"></div>
+
+<div class="container">
+    <h2>Logistics Company</h2>
+
+    <!-- Login form -->
+    <form id="loginForm" class="form active">
+        <h3>Sign in to your account</h3>
+
+        <div id="loginError" class="error-message" style="display: none;"></div>
+
+        <label>Username</label>
+        <input type="text" id="loginUsername" placeholder="Enter your username" required />
+
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" required />
+
+        <button type="submit" class="btn" id="loginBtn">
+            <span class="btn-text">Login</span>
+            <span class="btn-loading" style="display: none;">Logging in...</span>
+        </button>
+
+        <p class="switch">
+            New here? <a href="#" id="showSignup">Create an account</a>
+        </p>
+    </form>
+
+    <!-- Signup form -->
+    <form id="signupForm" class="form">
+        <h3>Create an account</h3>
+
+        <div id="signupError" class="error-message" style="display: none;"></div>
+        <div id="signupSuccess" class="success-message" style="display: none;"></div>
+
+        <label>Username</label>
+        <input type="text" id="signupUsername" placeholder="Choose a username" required minlength="3" maxlength="50" />
+
+        <label>Email</label>
+        <input type="email" id="signupEmail" placeholder="example@mail.com" required />
+
+        <label>Password</label>
+        <input type="password" id="signupPassword" placeholder="Min 6 characters" required minlength="6" />
+
+        <label>Register as</label>
+        <select id="signupRole" required>
+            <option value="CUSTOMER">Customer (Send/Receive Shipments)</option>
+            <option value="EMPLOYEE">Employee (Manage Shipments)</option>
+        </select>
+
+        <button type="submit" class="btn" id="signupBtn">
+            <span class="btn-text">Sign Up</span>
+            <span class="btn-loading" style="display: none;">Creating account...</span>
+        </button>
+
+        <p class="switch">
+            Already have an account? <a href="#" id="showLogin">Log in</a>
+        </p>
+    </form>
+</div>
+
+<script type="module" src="js/login.js"></script>
+</body>
+</html>

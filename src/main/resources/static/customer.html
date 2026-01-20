@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Logistics — Customer Dashboard</title>
+    <link rel="stylesheet" href="css/customer.css" />
+</head>
+<body>
+<div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="logo">LC</div>
+            <div class="company">Logistics Company</div>
+        </div>
+
+        <nav class="nav">
+            <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+            <button class="nav-btn" data-view="sent">Sent Packages</button>
+            <button class="nav-btn" data-view="received">Received Packages</button>
+            <button class="nav-btn" data-view="expected">Expected / In Transit</button>
+            <button class="nav-btn" data-view="all">All Shipments</button>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <small>Signed in as</small>
+            <div class="user-name" id="userName">Customer</div>
+            <button id="logoutBtn" class="logout">Logout</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+        <header class="topbar">
+            <button id="menuToggle" class="hamburger" aria-label="Toggle menu">&#9776;</button>
+            <div class="welcome-bar">
+                <h2>Welcome, <span id="welcomeName">Customer</span></h2>
+            </div>
+        </header>
+
+        <!-- Main translucent card -->
+        <section class="content-card">
+            <div class="summary" id="summaryRow"></div>
+            <div id="contentArea">
+                <div class="loading">Loading...</div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script type="module" src="js/customer.js"></script>
+</body>
+</html>

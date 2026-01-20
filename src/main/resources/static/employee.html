@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Logistics — Employee Dashboard</title>
+    <link rel="stylesheet" href="css/employee.css" />
+</head>
+<body>
+<div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="logo">LC</div>
+            <div class="company">Logistics Company</div>
+        </div>
+
+        <nav class="nav">
+            <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+            <button class="nav-btn" data-view="register">Register Shipment</button>
+            <button class="nav-btn" data-view="all">All Shipments</button>
+            <hr class="nav-divider">
+            <button class="nav-btn" data-view="companies">Companies</button>
+            <button class="nav-btn" data-view="offices">Offices</button>
+            <button class="nav-btn" data-view="employees">Employees</button>
+            <button class="nav-btn" data-view="clients">Customers</button>
+            <hr class="nav-divider">
+            <button class="nav-btn" data-view="reports">Reports</button>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <small>Signed in as</small>
+            <div class="user-name" id="userName">Employee</div>
+            <button id="logoutBtn" class="logout">Logout</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+        <header class="topbar">
+            <button id="menuToggle" class="hamburger" aria-label="Toggle menu">&#9776;</button>
+            <div class="welcome-bar">
+                <h2>Welcome, <span id="welcomeName">Employee</span></h2>
+            </div>
+        </header>
+
+        <section class="content-card">
+            <div class="summary" id="summaryRow"></div>
+            <div id="contentArea">
+                <div class="loading">Loading...</div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script type="module" src="js/employee.js"></script>
+</body>
+</html>
