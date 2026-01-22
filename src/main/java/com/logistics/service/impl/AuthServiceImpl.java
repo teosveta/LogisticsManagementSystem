@@ -5,10 +5,16 @@ import com.logistics.dto.auth.LoginRequest;
 import com.logistics.dto.auth.RegisterRequest;
 import com.logistics.exception.DuplicateResourceException;
 import com.logistics.model.entity.Customer;
+import com.logistics.model.entity.Employee;
 import com.logistics.model.entity.User;
+import com.logistics.model.enums.EmployeeType;
 import com.logistics.model.enums.Role;
 import com.logistics.repository.CustomerRepository;
+import com.logistics.repository.EmployeeRepository;
 import com.logistics.repository.UserRepository;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import com.logistics.security.JwtTokenProvider;
 import com.logistics.service.AuthService;
 import org.slf4j.Logger;
@@ -38,17 +44,20 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
+    private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
 
     public AuthServiceImpl(UserRepository userRepository,
                            CustomerRepository customerRepository,
+                           EmployeeRepository employeeRepository,
                            PasswordEncoder passwordEncoder,
                            JwtTokenProvider jwtTokenProvider,
                            AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.customerRepository = customerRepository;
+        this.employeeRepository = employeeRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
@@ -78,11 +87,22 @@ public class AuthServiceImpl implements AuthService {
         User savedUser = userRepository.save(user);
         logger.info("User created with ID: {}", savedUser.getId());
 
-        // If registering as CUSTOMER, automatically create Customer record
+        // Create role-specific records automatically
         if (Role.CUSTOMER.equals(request.getRole())) {
+            // Create Customer record for CUSTOMER role
             Customer customer = new Customer(savedUser);
             customerRepository.save(customer);
             logger.info("Customer record created for user: {}", savedUser.getUsername());
+        } else if (Role.EMPLOYEE.equals(request.getRole())) {
+            // Create Employee record for EMPLOYEE role
+            Employee employee = new Employee();
+            employee.setUser(savedUser);
+            employee.setEmployeeType(EmployeeType.OFFICE_STAFF);
+            employee.setHireDate(LocalDate.now());
+            employee.setSalary(BigDecimal.ZERO);
+            // company and office are null - can be assigned later by admin
+            employeeRepository.save(employee);
+            logger.info("Employee record created for user: {}", savedUser.getUsername());
         }
 
         // Generate JWT token

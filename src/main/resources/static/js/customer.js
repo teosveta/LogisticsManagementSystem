@@ -1,11 +1,53 @@
 /**
  * Logistics Management System - Customer Dashboard
- * =================================================
  * View-only dashboard for customers to track their shipments
- * Customers can only view shipments they sent or will receive
+ * Uses modular architecture following SOLID principles
  */
 
-import { api, requireRole, logout, getUser, formatDate, formatCurrency, getStatusClass, showNotification } from './api.js';
+import { api, requireRole, getUser, formatDate, formatCurrency, getStatusClass } from './api.js';
+import { showLoading, showError, renderCustomerShipmentsTable, renderSummaryCards, renderTable } from './ui.js';
+import { initNavigation, getContentArea, getSummaryRow } from './navigation.js';
+
+// ==========================================
+// UI HELPER FUNCTIONS
+// ==========================================
+
+/**
+ * Merge sent and received shipments, removing duplicates by ID
+ * This is a simple UI utility, not business logic
+ */
+function mergeShipments(sent, received) {
+    const merged = [...sent];
+    received.forEach(r => {
+        if (!merged.find(s => s.id === r.id)) {
+            merged.push(r);
+        }
+    });
+    return merged;
+}
+
+/**
+ * Sort shipments by registration date (newest first)
+ */
+function sortByDate(shipments) {
+    return [...shipments].sort((a, b) =>
+        new Date(b.registeredAt || 0) - new Date(a.registeredAt || 0)
+    );
+}
+
+/**
+ * Get recent shipments sorted by date
+ */
+function getRecentShipments(shipments, limit = 5) {
+    return sortByDate(shipments).slice(0, limit);
+}
+
+/**
+ * Get all shipments from sent and received lists, sorted by date
+ */
+function getAllShipmentsSorted(sent, received) {
+    return sortByDate(mergeShipments(sent, received));
+}
 
 // ==========================================
 // STATE
@@ -24,46 +66,14 @@ let cachedShipments = {
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Require CUSTOMER role
     if (!requireRole('CUSTOMER')) return;
 
     currentUser = getUser();
-    initUI();
-    setupNavigation();
-    setupLogout();
+    initNavigation(handleView);
 
-    // Load customer data and dashboard
     await loadCustomerData();
     loadDashboard();
 });
-
-function initUI() {
-    document.getElementById('userName').textContent = currentUser.username;
-    document.getElementById('welcomeName').textContent = currentUser.username;
-}
-
-function setupNavigation() {
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            handleView(btn.dataset.view);
-        });
-    });
-
-    // Mobile menu toggle
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.getElementById('sidebar');
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
-    }
-}
-
-function setupLogout() {
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        logout();
-    });
-}
 
 // ==========================================
 // LOAD CUSTOMER DATA
@@ -71,7 +81,6 @@ function setupLogout() {
 
 async function loadCustomerData() {
     try {
-        // Find customer record by user ID
         const customers = await api.customers.getAll();
         customerData = customers.find(c => c.userId === currentUser.userId);
 
@@ -88,13 +97,16 @@ async function loadCustomerData() {
 // ==========================================
 
 function handleView(view) {
-    switch (view) {
-        case 'dashboard': loadDashboard(); break;
-        case 'sent': renderSentShipments(); break;
-        case 'received': renderReceivedShipments(); break;
-        case 'expected': renderExpectedShipments(); break;
-        case 'all': renderAllShipments(); break;
-    }
+    const viewHandlers = {
+        'dashboard': loadDashboard,
+        'sent': renderSentShipments,
+        'received': renderReceivedShipments,
+        'expected': renderExpectedShipments,
+        'all': renderAllShipments
+    };
+
+    const handler = viewHandlers[view];
+    if (handler) handler();
 }
 
 // ==========================================
@@ -102,53 +114,44 @@ function handleView(view) {
 // ==========================================
 
 async function loadDashboard() {
-    const summaryRow = document.getElementById('summaryRow');
-    const contentArea = document.getElementById('contentArea');
+    const summaryRow = getSummaryRow();
+    const contentArea = getContentArea();
 
-    summaryRow.innerHTML = '<div class="loading">Loading summary...</div>';
-    contentArea.innerHTML = '<div class="loading">Loading dashboard...</div>';
+    showLoading(summaryRow, 'Loading summary...');
+    showLoading(contentArea, 'Loading dashboard...');
 
     try {
         if (!customerData) {
             throw new Error('Customer profile not found. Please contact support.');
         }
 
-        // Load sent and received shipments in parallel
-        const [sent, received] = await Promise.all([
+        // Fetch metrics from backend and shipment lists for recent activity display
+        const [metrics, sent, received] = await Promise.all([
+            api.reports.customerMetrics(),
             api.reports.sentByCustomer(customerData.id),
             api.reports.receivedByCustomer(customerData.id)
         ]);
 
         cachedShipments.sent = sent;
         cachedShipments.received = received;
-        cachedShipments.all = [...sent, ...received.filter(r => !sent.find(s => s.id === r.id))];
+        cachedShipments.all = mergeShipments(sent, received);
 
-        // Calculate stats
-        const totalSent = sent.length;
-        const totalReceived = received.filter(r => r.status === 'DELIVERED').length;
-        const inTransit = [...sent, ...received].filter(s =>
-            s.status === 'REGISTERED' || s.status === 'IN_TRANSIT'
-        ).length;
-        const totalSpent = sent.reduce((sum, s) => sum + parseFloat(s.price || 0), 0);
+        summaryRow.innerHTML = renderSummaryCards([
+            { title: 'Sent', value: metrics.totalSent },
+            { title: 'Received', value: metrics.totalReceived },
+            { title: 'In Transit', value: metrics.inTransit },
+            { title: 'Total Spent (BGN)', value: parseFloat(metrics.totalSpent).toFixed(2) }
+        ]);
 
-        // Render summary
-        summaryRow.innerHTML = `
-            <div class="sum-card"><h4>Sent</h4><p>${totalSent}</p></div>
-            <div class="sum-card"><h4>Received</h4><p>${totalReceived}</p></div>
-            <div class="sum-card"><h4>In Transit</h4><p>${inTransit}</p></div>
-            <div class="sum-card"><h4>Total Spent (BGN)</h4><p>${totalSpent.toFixed(2)}</p></div>
-        `;
-
-        // Render dashboard content
         contentArea.innerHTML = `
             <h3>Customer Dashboard</h3>
             <p style="color:#465c66;margin-bottom:16px">
                 Welcome back, ${currentUser.username}! Here you can track all your shipments.
             </p>
 
-            ${inTransit > 0 ? `
+            ${metrics.inTransit > 0 ? `
                 <div class="alert alert-info">
-                    You have <strong>${inTransit}</strong> shipment(s) currently in transit.
+                    You have <strong>${metrics.inTransit}</strong> shipment(s) currently in transit.
                 </div>
             ` : ''}
 
@@ -157,52 +160,43 @@ async function loadDashboard() {
                 ${renderRecentActivity(sent, received)}
             </div>
         `;
-
     } catch (error) {
         console.error('Dashboard error:', error);
         summaryRow.innerHTML = '';
-        contentArea.innerHTML = `<div class="error-message">Error loading dashboard: ${error.message}</div>`;
+        showError(contentArea, `Error loading dashboard: ${error.message}`);
     }
 }
 
+// ==========================================
+// HELPER FUNCTIONS
+// ==========================================
+
 function renderRecentActivity(sent, received) {
-    // Combine and sort by date (most recent first)
-    const combined = [...sent, ...received.filter(r => !sent.find(s => s.id === r.id))];
-    const recent = combined
-        .sort((a, b) => new Date(b.registeredAt || 0) - new Date(a.registeredAt || 0))
-        .slice(0, 5);
+    const combined = mergeShipments(sent, received);
+    const recent = getRecentShipments(combined, 5);
 
     if (recent.length === 0) {
         return '<p class="no-data">No recent activity.</p>';
     }
 
-    return `
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Type</th>
-                    <th>From/To</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${recent.map(s => {
-                    const isSent = sent.find(sent => sent.id === s.id);
-                    return `
-                        <tr>
-                            <td>#${s.id}</td>
-                            <td>${isSent ? '<span class="type-sent">Sent</span>' : '<span class="type-received">Incoming</span>'}</td>
-                            <td>${isSent ? s.receiverName : s.senderName}</td>
-                            <td><span class="status-pill ${getStatusClass(s.status)}">${s.status}</span></td>
-                            <td>${formatDate(s.registeredAt)}</td>
-                        </tr>
-                    `;
-                }).join('')}
-            </tbody>
-        </table>
-    `;
+    return renderTable({
+        columns: [
+            { key: 'id', label: 'ID', render: s => `#${s.id}` },
+            { key: 'type', label: 'Type', render: s => {
+                const isSent = sent.find(item => item.id === s.id);
+                return isSent
+                    ? '<span class="type-sent">Sent</span>'
+                    : '<span class="type-received">Incoming</span>';
+            }},
+            { key: 'fromTo', label: 'From/To', render: s => {
+                const isSent = sent.find(item => item.id === s.id);
+                return isSent ? s.receiverName : s.senderName;
+            }},
+            { key: 'status', label: 'Status', render: s => `<span class="status-pill ${getStatusClass(s.status)}">${s.status}</span>` },
+            { key: 'registeredAt', label: 'Date', render: s => formatDate(s.registeredAt) }
+        ],
+        data: recent
+    });
 }
 
 // ==========================================
@@ -210,8 +204,8 @@ function renderRecentActivity(sent, received) {
 // ==========================================
 
 async function renderSentShipments() {
-    const contentArea = document.getElementById('contentArea');
-    contentArea.innerHTML = '<div class="loading">Loading sent shipments...</div>';
+    const contentArea = getContentArea();
+    showLoading(contentArea, 'Loading sent shipments...');
 
     try {
         if (!customerData) {
@@ -224,12 +218,11 @@ async function renderSentShipments() {
         contentArea.innerHTML = `
             <h3>Sent Shipments</h3>
             <p class="section-subtitle">Packages you have sent to others</p>
-            ${renderShipmentsTable(shipments, 'sent')}
+            ${renderCustomerShipmentsTable(shipments, 'sent')}
         `;
-
     } catch (error) {
         console.error('Error loading sent shipments:', error);
-        contentArea.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
+        showError(contentArea, `Error: ${error.message}`);
     }
 }
 
@@ -238,8 +231,8 @@ async function renderSentShipments() {
 // ==========================================
 
 async function renderReceivedShipments() {
-    const contentArea = document.getElementById('contentArea');
-    contentArea.innerHTML = '<div class="loading">Loading received shipments...</div>';
+    const contentArea = getContentArea();
+    showLoading(contentArea, 'Loading received shipments...');
 
     try {
         if (!customerData) {
@@ -252,12 +245,11 @@ async function renderReceivedShipments() {
         contentArea.innerHTML = `
             <h3>Received Shipments</h3>
             <p class="section-subtitle">Packages addressed to you</p>
-            ${renderShipmentsTable(shipments, 'received')}
+            ${renderCustomerShipmentsTable(shipments, 'received')}
         `;
-
     } catch (error) {
         console.error('Error loading received shipments:', error);
-        contentArea.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
+        showError(contentArea, `Error: ${error.message}`);
     }
 }
 
@@ -266,30 +258,23 @@ async function renderReceivedShipments() {
 // ==========================================
 
 async function renderExpectedShipments() {
-    const contentArea = document.getElementById('contentArea');
-    contentArea.innerHTML = '<div class="loading">Loading shipments...</div>';
+    const contentArea = getContentArea();
+    showLoading(contentArea, 'Loading shipments...');
 
     try {
         if (!customerData) {
             throw new Error('Customer profile not found.');
         }
 
-        // Get both sent and received, filter for in-transit
         const [sent, received] = await Promise.all([
             api.reports.sentByCustomer(customerData.id),
             api.reports.receivedByCustomer(customerData.id)
         ]);
 
-        const inTransitSent = sent.filter(s => s.status === 'REGISTERED' || s.status === 'IN_TRANSIT');
-        const inTransitReceived = received.filter(s => s.status === 'REGISTERED' || s.status === 'IN_TRANSIT');
-
-        // Remove duplicates (shipments that appear in both)
-        const inTransitAll = [...inTransitSent];
-        inTransitReceived.forEach(r => {
-            if (!inTransitAll.find(s => s.id === r.id)) {
-                inTransitAll.push(r);
-            }
-        });
+        const isInTransit = s => s.status === 'REGISTERED' || s.status === 'IN_TRANSIT';
+        const inTransitSent = sent.filter(isInTransit);
+        const inTransitReceived = received.filter(isInTransit);
+        const inTransitAll = mergeShipments(inTransitSent, inTransitReceived);
 
         contentArea.innerHTML = `
             <h3>Expected / In Transit</h3>
@@ -297,20 +282,19 @@ async function renderExpectedShipments() {
 
             ${inTransitSent.length > 0 ? `
                 <h4 class="subsection-title">Your Sent Shipments in Transit (${inTransitSent.length})</h4>
-                ${renderShipmentsTable(inTransitSent, 'sent')}
+                ${renderCustomerShipmentsTable(inTransitSent, 'sent')}
             ` : ''}
 
             ${inTransitReceived.length > 0 ? `
                 <h4 class="subsection-title">Incoming Shipments (${inTransitReceived.length})</h4>
-                ${renderShipmentsTable(inTransitReceived, 'received')}
+                ${renderCustomerShipmentsTable(inTransitReceived, 'received')}
             ` : ''}
 
             ${inTransitAll.length === 0 ? '<p class="no-data">No shipments in transit.</p>' : ''}
         `;
-
     } catch (error) {
         console.error('Error loading expected shipments:', error);
-        contentArea.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
+        showError(contentArea, `Error: ${error.message}`);
     }
 }
 
@@ -319,8 +303,8 @@ async function renderExpectedShipments() {
 // ==========================================
 
 async function renderAllShipments() {
-    const contentArea = document.getElementById('contentArea');
-    contentArea.innerHTML = '<div class="loading">Loading all shipments...</div>';
+    const contentArea = getContentArea();
+    showLoading(contentArea, 'Loading all shipments...');
 
     try {
         if (!customerData) {
@@ -332,20 +316,9 @@ async function renderAllShipments() {
             api.reports.receivedByCustomer(customerData.id)
         ]);
 
-        // Combine without duplicates
-        const all = [...sent];
-        received.forEach(r => {
-            if (!all.find(s => s.id === r.id)) {
-                all.push(r);
-            }
-        });
+        const all = getAllShipmentsSorted(sent, received);
 
-        // Sort by date
-        all.sort((a, b) => new Date(b.registeredAt || 0) - new Date(a.registeredAt || 0));
-
-        cachedShipments.sent = sent;
-        cachedShipments.received = received;
-        cachedShipments.all = all;
+        Object.assign(cachedShipments, { sent, received, all });
 
         contentArea.innerHTML = `
             <h3>All Shipments</h3>
@@ -367,13 +340,11 @@ async function renderAllShipments() {
             </div>
         `;
 
-        // Setup filters
         document.getElementById('searchInput').addEventListener('input', () => filterAllShipments(sent));
         document.getElementById('statusFilter').addEventListener('change', () => filterAllShipments(sent));
-
     } catch (error) {
         console.error('Error loading all shipments:', error);
-        contentArea.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
+        showError(contentArea, `Error: ${error.message}`);
     }
 }
 
@@ -381,14 +352,20 @@ function filterAllShipments(sentList) {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const status = document.getElementById('statusFilter').value;
 
-    let filtered = cachedShipments.all.filter(s => {
-        const matchesSearch = !search ||
+    // Simple client-side filtering for display purposes
+    let filtered = cachedShipments.all;
+
+    if (search) {
+        filtered = filtered.filter(s =>
             s.id.toString().includes(search) ||
             (s.senderName && s.senderName.toLowerCase().includes(search)) ||
-            (s.receiverName && s.receiverName.toLowerCase().includes(search));
-        const matchesStatus = !status || s.status === status;
-        return matchesSearch && matchesStatus;
-    });
+            (s.receiverName && s.receiverName.toLowerCase().includes(search))
+        );
+    }
+
+    if (status) {
+        filtered = filtered.filter(s => s.status === status);
+    }
 
     document.getElementById('shipmentsContainer').innerHTML = renderAllShipmentsTable(filtered, sentList);
 }
@@ -398,82 +375,24 @@ function renderAllShipmentsTable(shipments, sentList) {
         return '<p class="no-data">No shipments found.</p>';
     }
 
-    return `
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Type</th>
-                    <th>Sender</th>
-                    <th>Receiver</th>
-                    <th>Origin</th>
-                    <th>Destination</th>
-                    <th>Weight</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${shipments.map(s => {
-                    const isSent = sentList.find(sent => sent.id === s.id);
-                    return `
-                        <tr>
-                            <td>#${s.id}</td>
-                            <td>${isSent ? '<span class="type-sent">Sent</span>' : '<span class="type-received">Incoming</span>'}</td>
-                            <td>${s.senderName || 'N/A'}</td>
-                            <td>${s.receiverName || 'N/A'}</td>
-                            <td>${s.originOfficeName || 'N/A'}</td>
-                            <td>${s.deliverToAddress ? s.deliveryAddress : (s.destinationOfficeName || 'N/A')}</td>
-                            <td>${s.weight} kg</td>
-                            <td>${formatCurrency(s.price)} BGN</td>
-                            <td><span class="status-pill ${getStatusClass(s.status)}">${s.status}</span></td>
-                        </tr>
-                    `;
-                }).join('')}
-            </tbody>
-        </table>
-    `;
-}
-
-// ==========================================
-// SHARED TABLE RENDERER
-// ==========================================
-
-function renderShipmentsTable(shipments, type) {
-    if (shipments.length === 0) {
-        return '<p class="no-data">No shipments found.</p>';
-    }
-
-    const isSent = type === 'sent';
-
-    return `
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>${isSent ? 'Receiver' : 'Sender'}</th>
-                    <th>Origin</th>
-                    <th>Destination</th>
-                    <th>Weight</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${shipments.map(s => `
-                    <tr>
-                        <td>#${s.id}</td>
-                        <td>${isSent ? (s.receiverName || 'N/A') : (s.senderName || 'N/A')}</td>
-                        <td>${s.originOfficeName || 'N/A'}</td>
-                        <td>${s.deliverToAddress ? s.deliveryAddress : (s.destinationOfficeName || 'N/A')}</td>
-                        <td>${s.weight} kg</td>
-                        <td>${formatCurrency(s.price)} BGN</td>
-                        <td><span class="status-pill ${getStatusClass(s.status)}">${s.status}</span></td>
-                        <td>${formatDate(s.registeredAt)}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
+    return renderTable({
+        columns: [
+            { key: 'id', label: 'ID', render: s => `#${s.id}` },
+            { key: 'type', label: 'Type', render: s => {
+                const isSent = sentList.find(sent => sent.id === s.id);
+                return isSent
+                    ? '<span class="type-sent">Sent</span>'
+                    : '<span class="type-received">Incoming</span>';
+            }},
+            { key: 'senderName', label: 'Sender', render: s => s.senderName || 'N/A' },
+            { key: 'receiverName', label: 'Receiver', render: s => s.receiverName || 'N/A' },
+            { key: 'originOfficeName', label: 'Origin', render: s => s.originOfficeName || 'N/A' },
+            { key: 'destination', label: 'Destination', render: s => s.deliverToAddress ? s.deliveryAddress : (s.destinationOfficeName || 'N/A') },
+            { key: 'weight', label: 'Weight', render: s => `${s.weight} kg` },
+            { key: 'price', label: 'Price', render: s => `${formatCurrency(s.price)} BGN` },
+            { key: 'status', label: 'Status', render: s => `<span class="status-pill ${getStatusClass(s.status)}">${s.status}</span>` }
+        ],
+        data: shipments,
+        emptyMessage: 'No shipments found.'
+    });
 }

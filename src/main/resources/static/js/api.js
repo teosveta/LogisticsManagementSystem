@@ -294,7 +294,19 @@ export const api = {
         pendingShipments: () => api.get('/api/reports/shipments/pending'),
         sentByCustomer: (customerId) => api.get(`/api/reports/shipments/customer/${customerId}/sent`),
         receivedByCustomer: (customerId) => api.get(`/api/reports/shipments/customer/${customerId}/received`),
-        revenue: (startDate, endDate) => api.get(`/api/reports/revenue?startDate=${startDate}&endDate=${endDate}`)
+        revenue: (startDate, endDate) => api.get(`/api/reports/revenue?startDate=${startDate}&endDate=${endDate}`),
+        dashboardMetrics: () => api.get('/api/reports/dashboard'),
+        customerMetrics: () => api.get('/api/reports/customer-metrics')
+    },
+
+    // ==========================================
+    // PRICING ENDPOINTS
+    // ==========================================
+
+    pricing: {
+        getInfo: () => api.get('/api/pricing'),
+        getConfig: () => api.get('/api/pricing/config'),
+        updateConfig: (data) => api.put('/api/pricing/config', data)
     }
 };
 
@@ -318,21 +330,6 @@ export function showError(element, message) {
     if (element) {
         element.innerHTML = `<div class="error-message">${message}</div>`;
     }
-}
-
-/**
- * Show success notification
- */
-export function showNotification(message, type = 'success') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.classList.add('fade-out');
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
 }
 
 /**

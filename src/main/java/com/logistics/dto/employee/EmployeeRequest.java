@@ -2,7 +2,7 @@ package com.logistics.dto.employee;
 
 import com.logistics.model.enums.EmployeeType;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,7 +20,10 @@ public class EmployeeRequest {
     @NotNull(message = "User ID is required")
     private Long userId;
 
-    @NotNull(message = "Company ID is required")
+    /**
+     * Company ID - optional for self-registered employees.
+     * Can be assigned later by admin.
+     */
     private Long companyId;
 
     @NotNull(message = "Employee type is required")
@@ -39,7 +42,7 @@ public class EmployeeRequest {
      * NEVER use double or float for money!
      */
     @NotNull(message = "Salary is required")
-    @Positive(message = "Salary must be positive")
+    @PositiveOrZero(message = "Salary must be zero or positive")
     private BigDecimal salary;
 
     // Default constructor

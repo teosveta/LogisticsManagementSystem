@@ -63,17 +63,19 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new DuplicateResourceException("Employee", "userId", request.getUserId());
         }
 
-        // Validate company exists
-        Company company = companyRepository.findById(request.getCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company", "id", request.getCompanyId()));
-
         // Create employee
         Employee employee = new Employee();
         employee.setUser(user);
-        employee.setCompany(company);
         employee.setEmployeeType(request.getEmployeeType());
         employee.setHireDate(request.getHireDate());
         employee.setSalary(request.getSalary());
+
+        // Set company if provided (optional for self-registered employees)
+        if (request.getCompanyId() != null) {
+            Company company = companyRepository.findById(request.getCompanyId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Company", "id", request.getCompanyId()));
+            employee.setCompany(company);
+        }
 
         // Set office if provided
         if (request.getOfficeId() != null) {
@@ -127,11 +129,18 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", id));
 
-        // Validate company exists if changing
-        if (!employee.getCompany().getId().equals(request.getCompanyId())) {
-            Company company = companyRepository.findById(request.getCompanyId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Company", "id", request.getCompanyId()));
-            employee.setCompany(company);
+        // Update company if provided
+        if (request.getCompanyId() != null) {
+            // Only fetch company if it's different from current
+            Long currentCompanyId = employee.getCompany() != null ? employee.getCompany().getId() : null;
+            if (!request.getCompanyId().equals(currentCompanyId)) {
+                Company company = companyRepository.findById(request.getCompanyId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Company", "id", request.getCompanyId()));
+                employee.setCompany(company);
+            }
+        } else {
+            // Allow removing company assignment
+            employee.setCompany(null);
         }
 
         employee.setEmployeeType(request.getEmployeeType());

@@ -126,4 +126,66 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
      * @return count of shipments with the specified status
      */
     long countByStatus(ShipmentStatus status);
+
+    /**
+     * Calculates total revenue from all shipments (sum of all prices).
+     * Used for dashboard metrics.
+     *
+     * @return total revenue as BigDecimal, or null if no shipments found
+     */
+    @Query("SELECT COALESCE(SUM(s.price), 0) FROM Shipment s")
+    BigDecimal calculateTotalRevenue();
+
+    /**
+     * Counts shipments that are in transit (REGISTERED or IN_TRANSIT).
+     * Used for dashboard metrics.
+     *
+     * @return count of in-transit shipments
+     */
+    @Query("SELECT COUNT(s) FROM Shipment s WHERE s.status = 'REGISTERED' OR s.status = 'IN_TRANSIT'")
+    long countInTransitShipments();
+
+    /**
+     * Counts shipments sent by a customer that are in transit.
+     *
+     * @param senderId the sender's customer ID
+     * @return count of in-transit shipments sent by the customer
+     */
+    @Query("SELECT COUNT(s) FROM Shipment s WHERE s.sender.id = :senderId AND (s.status = 'REGISTERED' OR s.status = 'IN_TRANSIT')")
+    long countInTransitBySenderId(@Param("senderId") Long senderId);
+
+    /**
+     * Counts shipments received by a customer that are in transit.
+     *
+     * @param recipientId the recipient's customer ID
+     * @return count of in-transit shipments for the recipient
+     */
+    @Query("SELECT COUNT(s) FROM Shipment s WHERE s.recipient.id = :recipientId AND (s.status = 'REGISTERED' OR s.status = 'IN_TRANSIT')")
+    long countInTransitByRecipientId(@Param("recipientId") Long recipientId);
+
+    /**
+     * Counts delivered shipments received by a customer.
+     *
+     * @param recipientId the recipient's customer ID
+     * @return count of delivered shipments for the recipient
+     */
+    @Query("SELECT COUNT(s) FROM Shipment s WHERE s.recipient.id = :recipientId AND s.status = 'DELIVERED'")
+    long countDeliveredByRecipientId(@Param("recipientId") Long recipientId);
+
+    /**
+     * Calculates total spent (sum of prices) for shipments sent by a customer.
+     *
+     * @param senderId the sender's customer ID
+     * @return total spent as BigDecimal
+     */
+    @Query("SELECT COALESCE(SUM(s.price), 0) FROM Shipment s WHERE s.sender.id = :senderId")
+    BigDecimal calculateTotalSpentBySenderId(@Param("senderId") Long senderId);
+
+    /**
+     * Counts shipments sent by a customer.
+     *
+     * @param senderId the sender's customer ID
+     * @return count of shipments sent by the customer
+     */
+    long countBySenderId(Long senderId);
 }

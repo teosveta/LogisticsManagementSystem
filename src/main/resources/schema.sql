@@ -131,3 +131,20 @@ CREATE TABLE IF NOT EXISTS shipments (
     INDEX idx_shipments_status (status),
     INDEX idx_shipments_delivered_at (delivered_at)
 );
+
+-- ========================================
+-- PRICING CONFIGURATION TABLE
+-- Stores configurable pricing values
+-- Only one row should be active at a time
+-- ========================================
+CREATE TABLE IF NOT EXISTS pricing_config (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    base_price DECIMAL(10,2) NOT NULL,
+    price_per_kg DECIMAL(10,2) NOT NULL,
+    address_delivery_fee DECIMAL(10,2) NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT true,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME,
+
+    INDEX idx_pricing_active (active)
+);

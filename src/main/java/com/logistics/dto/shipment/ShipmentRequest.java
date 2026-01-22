@@ -2,6 +2,7 @@ package com.logistics.dto.shipment;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
@@ -31,6 +32,7 @@ public class ShipmentRequest {
      * Delivery address for address-based deliveries.
      * Mutually exclusive with deliveryOfficeId.
      */
+    @Size(max = 255, message = "Delivery address must not exceed 255 characters")
     private String deliveryAddress;
 
     /**

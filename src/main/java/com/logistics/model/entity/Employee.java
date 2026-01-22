@@ -50,10 +50,11 @@ public class Employee {
 
     /**
      * Many-to-one relationship with Company.
-     * Every employee works for exactly one company.
+     * Employee typically works for a company, but may be null for self-registered employees
+     * who haven't been assigned to a company yet.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id", nullable = false)
+    @JoinColumn(name = "company_id", nullable = true)
     private Company company;
 
     /**

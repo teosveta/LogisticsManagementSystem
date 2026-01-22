@@ -19,6 +19,7 @@ public class EmployeeResponse {
     private Long id;
     private Long userId;
     private String username;
+    private String name;  // Display name (same as username, for frontend compatibility)
     private String email;
     private Long companyId;
     private String companyName;
@@ -57,6 +58,14 @@ public class EmployeeResponse {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmail() {

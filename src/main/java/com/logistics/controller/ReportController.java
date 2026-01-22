@@ -2,6 +2,8 @@ package com.logistics.controller;
 
 import com.logistics.dto.customer.CustomerResponse;
 import com.logistics.dto.employee.EmployeeResponse;
+import com.logistics.dto.report.CustomerMetricsResponse;
+import com.logistics.dto.report.DashboardMetricsResponse;
 import com.logistics.dto.report.RevenueResponse;
 import com.logistics.dto.shipment.ShipmentResponse;
 import com.logistics.exception.UnauthorizedException;
@@ -218,5 +220,39 @@ public class ReportController {
         Customer customer = customerRepository.findByUsername(username)
                 .orElseThrow(() -> new UnauthorizedException("Customer not found for user: " + username));
         return customer.getId();
+    }
+
+    /**
+     * Gets dashboard metrics for employee view.
+     * Returns total shipments, pending, delivered, and total revenue in a single call.
+     */
+    @GetMapping("/dashboard")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    @Operation(summary = "Dashboard metrics", description = "Returns aggregated dashboard metrics (Employee only)")
+    public ResponseEntity<DashboardMetricsResponse> getDashboardMetrics() {
+        logger.debug("Getting dashboard metrics");
+        DashboardMetricsResponse metrics = reportService.getDashboardMetrics();
+        return ResponseEntity.ok(metrics);
+    }
+
+    /**
+     * Gets dashboard metrics for customer view.
+     * Returns sent, received, in-transit counts and total spent.
+     * Customers can only access their own metrics.
+     */
+    @GetMapping("/customer-metrics")
+    @Operation(summary = "Customer metrics", description = "Returns customer dashboard metrics")
+    public ResponseEntity<CustomerMetricsResponse> getCustomerMetrics(Authentication authentication) {
+        logger.debug("Getting customer metrics for user: {}", authentication.getName());
+
+        Long customerId;
+        if (isCustomer(authentication)) {
+            customerId = getCustomerIdFromAuth(authentication);
+        } else {
+            throw new UnauthorizedException("Only customers can access customer metrics");
+        }
+
+        CustomerMetricsResponse metrics = reportService.getCustomerMetrics(customerId);
+        return ResponseEntity.ok(metrics);
     }
 }

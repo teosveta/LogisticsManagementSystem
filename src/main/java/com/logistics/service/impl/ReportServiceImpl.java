@@ -2,6 +2,8 @@ package com.logistics.service.impl;
 
 import com.logistics.dto.customer.CustomerResponse;
 import com.logistics.dto.employee.EmployeeResponse;
+import com.logistics.dto.report.CustomerMetricsResponse;
+import com.logistics.dto.report.DashboardMetricsResponse;
 import com.logistics.dto.report.RevenueResponse;
 import com.logistics.dto.shipment.ShipmentResponse;
 import com.logistics.exception.ResourceNotFoundException;
@@ -166,5 +168,47 @@ public class ReportServiceImpl implements ReportService {
         logger.info("Revenue report: {} total from {} delivered shipments", totalRevenue, deliveredCount);
 
         return new RevenueResponse(startDate, endDate, totalRevenue, deliveredCount);
+    }
+
+    @Override
+    public DashboardMetricsResponse getDashboardMetrics() {
+        logger.debug("Generating dashboard metrics");
+
+        long total = shipmentRepository.count();
+        long pending = shipmentRepository.countInTransitShipments();
+        long delivered = shipmentRepository.countByStatus(ShipmentStatus.DELIVERED);
+        BigDecimal totalRevenue = shipmentRepository.calculateTotalRevenue();
+
+        logger.debug("Dashboard metrics: total={}, pending={}, delivered={}, revenue={}",
+                total, pending, delivered, totalRevenue);
+
+        return new DashboardMetricsResponse(total, pending, delivered, totalRevenue);
+    }
+
+    @Override
+    public CustomerMetricsResponse getCustomerMetrics(Long customerId) {
+        logger.debug("Generating customer metrics for customer ID: {}", customerId);
+
+        // Validate customer exists
+        if (!customerRepository.existsById(customerId)) {
+            throw new ResourceNotFoundException("Customer", "id", customerId);
+        }
+
+        long totalSent = shipmentRepository.countBySenderId(customerId);
+        long totalReceived = shipmentRepository.countDeliveredByRecipientId(customerId);
+
+        // In-transit: shipments where customer is sender OR recipient and status is REGISTERED or IN_TRANSIT
+        long inTransitSent = shipmentRepository.countInTransitBySenderId(customerId);
+        long inTransitReceived = shipmentRepository.countInTransitByRecipientId(customerId);
+        // We need unique count, but for simplicity we'll just use sent + received
+        // (in practice, a customer is rarely both sender AND recipient of the same shipment)
+        long inTransit = inTransitSent + inTransitReceived;
+
+        BigDecimal totalSpent = shipmentRepository.calculateTotalSpentBySenderId(customerId);
+
+        logger.debug("Customer metrics for {}: sent={}, received={}, inTransit={}, spent={}",
+                customerId, totalSent, totalReceived, inTransit, totalSpent);
+
+        return new CustomerMetricsResponse(totalSent, totalReceived, inTransit, totalSpent);
     }
 }

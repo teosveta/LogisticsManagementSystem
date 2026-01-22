@@ -6,6 +6,12 @@
 -- ========================================
 
 -- ========================================
+-- PRICING CONFIGURATION (Required for app to work)
+-- ========================================
+INSERT INTO pricing_config (base_price, price_per_kg, address_delivery_fee, active, created_at, updated_at) VALUES
+(5.00, 2.00, 10.00, true, NOW(), NOW());
+
+-- ========================================
 -- USERS (Password for all: "password123")
 -- BCrypt hash: $2a$10$xn3LI/AjqicFYZFruSwve.681477XaVNaUQbr1gioaWPn4t1KsnmG
 -- ========================================

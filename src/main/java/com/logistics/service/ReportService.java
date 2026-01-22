@@ -2,6 +2,8 @@ package com.logistics.service;
 
 import com.logistics.dto.customer.CustomerResponse;
 import com.logistics.dto.employee.EmployeeResponse;
+import com.logistics.dto.report.CustomerMetricsResponse;
+import com.logistics.dto.report.DashboardMetricsResponse;
 import com.logistics.dto.report.RevenueResponse;
 import com.logistics.dto.shipment.ShipmentResponse;
 
@@ -93,4 +95,21 @@ public interface ReportService {
      * @return revenue report with total and count
      */
     RevenueResponse getRevenueReport(LocalDate startDate, LocalDate endDate);
+
+    /**
+     * Gets dashboard metrics for employee view.
+     * Includes total shipments, pending, delivered, and total revenue.
+     *
+     * @return dashboard metrics
+     */
+    DashboardMetricsResponse getDashboardMetrics();
+
+    /**
+     * Gets dashboard metrics for a specific customer.
+     * Includes sent count, received count, in-transit count, and total spent.
+     *
+     * @param customerId the customer ID
+     * @return customer metrics
+     */
+    CustomerMetricsResponse getCustomerMetrics(Long customerId);
 }

@@ -84,9 +84,14 @@ public final class EntityMapper {
         response.setId(employee.getId());
         response.setUserId(employee.getUser().getId());
         response.setUsername(employee.getUser().getUsername());
+        response.setName(employee.getUser().getUsername());  // Set name for frontend compatibility
         response.setEmail(employee.getUser().getEmail());
-        response.setCompanyId(employee.getCompany().getId());
-        response.setCompanyName(employee.getCompany().getName());
+
+        // Company may be null for self-registered employees
+        if (employee.getCompany() != null) {
+            response.setCompanyId(employee.getCompany().getId());
+            response.setCompanyName(employee.getCompany().getName());
+        }
         response.setEmployeeType(employee.getEmployeeType());
 
         // Office may be null for couriers
@@ -114,6 +119,7 @@ public final class EntityMapper {
         response.setId(customer.getId());
         response.setUserId(customer.getUser().getId());
         response.setUsername(customer.getUser().getUsername());
+        response.setName(customer.getUser().getUsername());  // Set name for frontend compatibility
         response.setEmail(customer.getUser().getEmail());
         response.setPhone(customer.getPhone());
         response.setAddress(customer.getAddress());
