@@ -85,6 +85,9 @@ public class ShipmentServiceImpl implements ShipmentService {
         // Validate delivery destination - must have exactly one
         validateDeliveryDestination(request);
 
+        // Validate weight is positive and within limits
+        validateWeight(request.getWeight());
+
         // Get the employee who is registering the shipment
         Employee employee = employeeRepository.findByUsername(employeeUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", "username", employeeUsername));
@@ -205,6 +208,9 @@ public class ShipmentServiceImpl implements ShipmentService {
         // Validate delivery destination
         validateDeliveryDestination(request);
 
+        // Validate weight is positive and within limits
+        validateWeight(request.getWeight());
+
         // Update sender and recipient if changed
         if (!shipment.getSender().getId().equals(request.getSenderId())) {
             Customer sender = customerRepository.findById(request.getSenderId())
@@ -281,6 +287,28 @@ public class ShipmentServiceImpl implements ShipmentService {
 
         if (hasAddress && hasOffice) {
             throw new InvalidDataException("Cannot specify both deliveryAddress and deliveryOfficeId");
+        }
+    }
+
+    /**
+     * Validates that the weight is positive and within acceptable limits.
+     * Weight must be between 0.01 and 10000 kg.
+     *
+     * @param weight the weight to validate
+     * @throws InvalidDataException if weight is invalid
+     */
+    private void validateWeight(BigDecimal weight) {
+        if (weight == null) {
+            throw new InvalidDataException("Weight is required");
+        }
+
+        if (weight.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidDataException("Weight must be greater than 0");
+        }
+
+        BigDecimal maxWeight = new BigDecimal("10000.00");
+        if (weight.compareTo(maxWeight) > 0) {
+            throw new InvalidDataException("Weight cannot exceed 10000 kg");
         }
     }
 

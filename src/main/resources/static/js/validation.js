@@ -207,9 +207,13 @@ export function validateShipmentForm(data) {
         errors.push('Sender and receiver must be different.');
     }
 
-    // Weight validation
+    // Weight validation - must be between 0.01 and 10000 kg
     if (!data.weight || data.weight <= 0) {
-        errors.push('Weight must be a positive number.');
+        errors.push('Weight must be greater than 0.');
+    } else if (data.weight < 0.01) {
+        errors.push('Weight must be at least 0.01 kg.');
+    } else if (data.weight > 10000) {
+        errors.push('Weight cannot exceed 10000 kg.');
     }
 
     // Delivery destination validation

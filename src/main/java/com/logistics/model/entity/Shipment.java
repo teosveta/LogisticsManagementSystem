@@ -2,8 +2,9 @@ package com.logistics.model.entity;
 
 import com.logistics.model.enums.ShipmentStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -84,9 +85,11 @@ public class Shipment {
     /**
      * Weight of the shipment in kilograms.
      * Uses BigDecimal for precision in pricing calculations.
+     * Must be between 0.01 and 10000 kg.
      */
     @NotNull(message = "Weight is required")
-    @Positive(message = "Weight must be positive")
+    @DecimalMin(value = "0.01", message = "Weight must be at least 0.01 kg")
+    @DecimalMax(value = "10000.00", message = "Weight cannot exceed 10000 kg")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal weight;
 

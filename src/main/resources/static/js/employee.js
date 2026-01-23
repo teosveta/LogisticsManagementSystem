@@ -168,7 +168,7 @@ async function renderRegisterShipment() {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Weight (kg)</label>
-                        <input type="number" id="weight" step="0.01" min="0.01" required placeholder="e.g. 2.5">
+                        <input type="number" id="weight" step="0.01" min="0.01" max="10000" required placeholder="e.g. 2.5">
                     </div>
                     <div class="form-group">
                         <label>Delivery Type</label>
@@ -517,7 +517,7 @@ window.editShipment = async function(id) {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Weight (kg)</label>
-                        <input type="number" id="editWeight" step="0.01" min="0.01" required value="${shipment.weight}">
+                        <input type="number" id="editWeight" step="0.01" min="0.01" max="10000" required value="${shipment.weight}">
                     </div>
                     <div class="form-group">
                         <label>Delivery Type</label>
@@ -1464,7 +1464,7 @@ async function generateRevenueReport() {
                 <h5>Revenue Summary</h5>
                 <p><strong>Period:</strong> ${fromDate} to ${toDate}</p>
                 <p><strong>Total Revenue:</strong> <span class="revenue-amount">${formatCurrency(result.totalRevenue)} BGN</span></p>
-                <p><strong>Number of Shipments:</strong> ${result.shipmentCount || 'N/A'}</p>
+                <p><strong>Delivered Shipments:</strong> ${result.deliveredShipmentsCount || 0}</p>
             </div>
         `;
     } catch (error) {

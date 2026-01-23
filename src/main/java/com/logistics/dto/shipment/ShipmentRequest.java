@@ -1,7 +1,8 @@
 package com.logistics.dto.shipment;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
@@ -44,9 +45,11 @@ public class ShipmentRequest {
     /**
      * Shipment weight in kilograms.
      * Uses BigDecimal for precise pricing calculations.
+     * Must be between 0.01 and 10000 kg.
      */
     @NotNull(message = "Weight is required")
-    @Positive(message = "Weight must be positive")
+    @DecimalMin(value = "0.01", message = "Weight must be at least 0.01 kg")
+    @DecimalMax(value = "10000.00", message = "Weight cannot exceed 10000 kg")
     private BigDecimal weight;
 
     // Default constructor
