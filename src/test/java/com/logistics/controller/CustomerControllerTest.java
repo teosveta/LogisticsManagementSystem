@@ -161,6 +161,58 @@ class CustomerControllerTest {
     }
 
     @Nested
+    @DisplayName("GET /api/customers/user/{userId} Tests")
+    class GetCustomerByUserIdTests {
+
+        @Test
+        @WithMockUser(username = "customer", roles = {"CUSTOMER"})
+        @DisplayName("Should return customer when authenticated as customer")
+        void getCustomerByUserId_AuthenticatedCustomer_Success() throws Exception {
+            // Arrange
+            when(customerService.getCustomerByUserId(1L)).thenReturn(customerResponse);
+
+            // Act & Assert
+            mockMvc.perform(get("/api/customers/user/1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id").value(1))
+                    .andExpect(jsonPath("$.username").value("jane.doe"));
+        }
+
+        @Test
+        @WithMockUser(username = "employee", roles = {"EMPLOYEE"})
+        @DisplayName("Should return customer when authenticated as employee")
+        void getCustomerByUserId_AuthenticatedEmployee_Success() throws Exception {
+            // Arrange
+            when(customerService.getCustomerByUserId(1L)).thenReturn(customerResponse);
+
+            // Act & Assert
+            mockMvc.perform(get("/api/customers/user/1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id").value(1));
+        }
+
+        @Test
+        @WithMockUser(username = "customer", roles = {"CUSTOMER"})
+        @DisplayName("Should return 404 when customer not found for user")
+        void getCustomerByUserId_NotFound_ReturnsNotFound() throws Exception {
+            // Arrange
+            when(customerService.getCustomerByUserId(999L))
+                    .thenThrow(new ResourceNotFoundException("Customer", "userId", 999L));
+
+            // Act & Assert
+            mockMvc.perform(get("/api/customers/user/999"))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("Should return 401 when not authenticated")
+        void getCustomerByUserId_NotAuthenticated_Unauthorized() throws Exception {
+            mockMvc.perform(get("/api/customers/user/1"))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
     @DisplayName("GET /api/customers Tests")
     class GetAllCustomersTests {
 

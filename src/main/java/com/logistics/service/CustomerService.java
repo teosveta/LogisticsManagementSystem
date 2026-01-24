@@ -40,6 +40,14 @@ public interface CustomerService {
     CustomerResponse getCustomerByUsername(String username);
 
     /**
+     * Retrieves a customer by their associated user ID.
+     *
+     * @param userId the user's ID
+     * @return the customer response
+     */
+    CustomerResponse getCustomerByUserId(Long userId);
+
+    /**
      * Retrieves all customers.
      *
      * @return list of all customers
@@ -61,4 +69,18 @@ public interface CustomerService {
      * @param id the customer ID
      */
     void deleteCustomer(Long id);
+
+    /**
+     * Gets the customer ID for a given username.
+     * Used by controllers to resolve customer identity from authentication.
+     *
+     * This method supports the Dependency Inversion Principle (DIP) by allowing
+     * controllers to depend on the service interface rather than directly
+     * accessing the repository layer.
+     *
+     * @param username the username from authentication
+     * @return the customer ID
+     * @throws com.logistics.exception.ResourceNotFoundException if customer not found
+     */
+    Long getCustomerIdByUsername(String username);
 }

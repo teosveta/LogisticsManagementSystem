@@ -57,6 +57,15 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('EMPLOYEE')")
+    @Operation(summary = "Get customer by user ID", description = "Retrieves a customer by their user ID (Customer or Employee)")
+    public ResponseEntity<CustomerResponse> getCustomerByUserId(@PathVariable Long userId) {
+        logger.debug("Fetching customer with user ID: {}", userId);
+        CustomerResponse response = customerService.getCustomerByUserId(userId);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "Get all customers", description = "Retrieves all customers (Employee only)")

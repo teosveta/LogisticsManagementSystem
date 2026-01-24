@@ -81,14 +81,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadCustomerData() {
     try {
-        const customers = await api.customers.getAll();
-        customerData = customers.find(c => c.userId === currentUser.userId);
-
-        if (!customerData) {
-            console.warn('Customer profile not found for user:', currentUser.userId);
-        }
+        customerData = await api.customers.getByUserId(currentUser.userId);
     } catch (error) {
         console.error('Error loading customer data:', error);
+        customerData = null;
     }
 }
 

@@ -149,16 +149,25 @@ public final class EntityMapper {
         response.setRecipientId(shipment.getRecipient().getId());
         response.setRecipientName(shipment.getRecipient().getUser().getUsername());
         response.setRecipientEmail(shipment.getRecipient().getUser().getEmail());
+        response.setReceiverName(shipment.getRecipient().getUser().getUsername()); // Frontend alias
 
         // Registered by employee info
         response.setRegisteredById(shipment.getRegisteredBy().getId());
         response.setRegisteredByName(shipment.getRegisteredBy().getUser().getUsername());
 
+        // Origin office (where shipment was registered/accepted)
+        if (shipment.getOriginOffice() != null) {
+            response.setOriginOfficeId(shipment.getOriginOffice().getId());
+            response.setOriginOfficeName(shipment.getOriginOffice().getName());
+        }
+
         // Delivery destination
         response.setDeliveryAddress(shipment.getDeliveryAddress());
+        response.setDeliverToAddress(shipment.isAddressDelivery()); // Frontend flag
         if (shipment.getDeliveryOffice() != null) {
             response.setDeliveryOfficeId(shipment.getDeliveryOffice().getId());
             response.setDeliveryOfficeName(shipment.getDeliveryOffice().getName());
+            response.setDestinationOfficeName(shipment.getDeliveryOffice().getName()); // Frontend alias
         }
         response.setDeliveryDestination(shipment.getDeliveryDestination());
 

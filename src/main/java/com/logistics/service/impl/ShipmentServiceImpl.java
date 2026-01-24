@@ -107,6 +107,15 @@ public class ShipmentServiceImpl implements ShipmentService {
         shipment.setWeight(request.getWeight());
         shipment.setStatus(ShipmentStatus.REGISTERED);
 
+        // Set origin office - use request value if provided, otherwise use employee's office
+        if (request.getOriginOfficeId() != null) {
+            Office originOffice = officeRepository.findById(request.getOriginOfficeId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Office (origin)", "id", request.getOriginOfficeId()));
+            shipment.setOriginOffice(originOffice);
+        } else if (employee.getOffice() != null) {
+            shipment.setOriginOffice(employee.getOffice());
+        }
+
         // Set delivery destination (either office or address)
         boolean isOfficeDelivery = false;
         if (request.isOfficeDelivery()) {

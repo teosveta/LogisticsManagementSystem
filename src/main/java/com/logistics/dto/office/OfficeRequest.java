@@ -2,6 +2,7 @@ package com.logistics.dto.office;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -32,6 +33,7 @@ public class OfficeRequest {
     private String country;
 
     @Size(max = 20, message = "Phone must not exceed 20 characters")
+    @Pattern(regexp = "^$|^[0-9+\\s()\\-]{7,20}$", message = "Phone must contain only numbers and valid characters (+, -, spaces, parentheses)")
     private String phone;
 
     // Default constructor

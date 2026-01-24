@@ -264,6 +264,7 @@ export const api = {
     customers: {
         getAll: () => api.get('/api/customers'),
         getById: (id) => api.get(`/api/customers/${id}`),
+        getByUserId: (userId) => api.get(`/api/customers/user/${userId}`),
         create: (data) => api.post('/api/customers', data),
         update: (id, data) => api.put(`/api/customers/${id}`, data),
         delete: (id) => api.delete(`/api/customers/${id}`)

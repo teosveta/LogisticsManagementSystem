@@ -28,15 +28,26 @@ public class ShipmentResponse {
     private String recipientName;
     private String recipientEmail;
 
+    // Frontend-compatible aliases
+    private String receiverName;  // Alias for recipientName
+
     // Employee who registered the shipment
     private Long registeredById;
     private String registeredByName;
+
+    // Origin office (where shipment was registered)
+    private Long originOfficeId;
+    private String originOfficeName;
 
     // Delivery destination (either address or office)
     private String deliveryAddress;
     private Long deliveryOfficeId;
     private String deliveryOfficeName;
     private String deliveryDestination;
+
+    // Frontend-compatible aliases and flags
+    private String destinationOfficeName;  // Alias for deliveryOfficeName
+    private boolean deliverToAddress;      // True if delivery is to address (not office)
 
     // Shipment details
     private BigDecimal weight;
@@ -109,6 +120,14 @@ public class ShipmentResponse {
         this.recipientEmail = recipientEmail;
     }
 
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    public void setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
+    }
+
     public Long getRegisteredById() {
         return registeredById;
     }
@@ -123,6 +142,22 @@ public class ShipmentResponse {
 
     public void setRegisteredByName(String registeredByName) {
         this.registeredByName = registeredByName;
+    }
+
+    public Long getOriginOfficeId() {
+        return originOfficeId;
+    }
+
+    public void setOriginOfficeId(Long originOfficeId) {
+        this.originOfficeId = originOfficeId;
+    }
+
+    public String getOriginOfficeName() {
+        return originOfficeName;
+    }
+
+    public void setOriginOfficeName(String originOfficeName) {
+        this.originOfficeName = originOfficeName;
     }
 
     public String getDeliveryAddress() {
@@ -155,6 +190,22 @@ public class ShipmentResponse {
 
     public void setDeliveryDestination(String deliveryDestination) {
         this.deliveryDestination = deliveryDestination;
+    }
+
+    public String getDestinationOfficeName() {
+        return destinationOfficeName;
+    }
+
+    public void setDestinationOfficeName(String destinationOfficeName) {
+        this.destinationOfficeName = destinationOfficeName;
+    }
+
+    public boolean isDeliverToAddress() {
+        return deliverToAddress;
+    }
+
+    public void setDeliverToAddress(boolean deliverToAddress) {
+        this.deliverToAddress = deliverToAddress;
     }
 
     public BigDecimal getWeight() {

@@ -65,13 +65,23 @@ export function validateEmail(email) {
 
 /**
  * Validate phone number format
+ * Only allows: digits, +, spaces, hyphens, parentheses
+ * Rejects any letters or special characters
  */
 export function validatePhone(phone) {
     if (!phone) return createResult(true); // Optional field
     const trimmed = String(phone).trim();
-    const phoneRegex = /^[+]?[\d\s-()]{7,20}$/;
+    if (!trimmed) return createResult(true);
+
+    // Check for any letters - reject immediately
+    if (/[a-zA-Z]/.test(trimmed)) {
+        return createResult(false, 'Phone number cannot contain letters.');
+    }
+
+    // Only allow digits and common phone characters: + - ( ) space
+    const phoneRegex = /^[0-9+\s()\-]{7,20}$/;
     if (!phoneRegex.test(trimmed)) {
-        return createResult(false, 'Please enter a valid phone number.');
+        return createResult(false, 'Phone must contain only numbers and valid characters (+, -, spaces, parentheses).');
     }
     return createResult(true);
 }

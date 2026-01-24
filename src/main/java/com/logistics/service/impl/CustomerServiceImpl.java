@@ -88,6 +88,17 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional(readOnly = true)
+    public CustomerResponse getCustomerByUserId(Long userId) {
+        logger.debug("Fetching customer with user ID: {}", userId);
+
+        Customer customer = customerRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", "userId", userId));
+
+        return EntityMapper.toCustomerResponse(customer);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<CustomerResponse> getAllCustomers() {
         logger.debug("Fetching all customers");
 
@@ -122,5 +133,16 @@ public class CustomerServiceImpl implements CustomerService {
 
         customerRepository.deleteById(id);
         logger.info("Customer deleted with ID: {}", id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long getCustomerIdByUsername(String username) {
+        logger.debug("Getting customer ID for username: {}", username);
+
+        Customer customer = customerRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", "username", username));
+
+        return customer.getId();
     }
 }

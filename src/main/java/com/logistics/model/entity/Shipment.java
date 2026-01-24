@@ -66,6 +66,14 @@ public class Shipment {
     private Employee registeredBy;
 
     /**
+     * Many-to-one relationship: office where the shipment was registered (origin).
+     * This is the office where the shipment was dropped off/accepted.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "origin_office_id")
+    private Office originOffice;
+
+    /**
      * Delivery address for address-based deliveries.
      * Mutually exclusive with deliveryOffice.
      * If set, an additional address delivery fee applies.
@@ -200,6 +208,14 @@ public class Shipment {
 
     public void setRegisteredBy(Employee registeredBy) {
         this.registeredBy = registeredBy;
+    }
+
+    public Office getOriginOffice() {
+        return originOffice;
+    }
+
+    public void setOriginOffice(Office originOffice) {
+        this.originOffice = originOffice;
     }
 
     public String getDeliveryAddress() {

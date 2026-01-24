@@ -2,6 +2,7 @@ package com.logistics.dto.company;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -25,6 +26,7 @@ public class CompanyRequest {
     private String address;
 
     @Size(max = 20, message = "Phone must not exceed 20 characters")
+    @Pattern(regexp = "^$|^[0-9+\\s()\\-]{7,20}$", message = "Phone must contain only numbers and valid characters (+, -, spaces, parentheses)")
     private String phone;
 
     @Email(message = "Email must be valid")

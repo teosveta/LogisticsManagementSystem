@@ -7,8 +7,7 @@ import com.logistics.dto.report.DashboardMetricsResponse;
 import com.logistics.dto.report.RevenueResponse;
 import com.logistics.dto.shipment.ShipmentResponse;
 import com.logistics.exception.UnauthorizedException;
-import com.logistics.model.entity.Customer;
-import com.logistics.repository.CustomerRepository;
+import com.logistics.service.CustomerService;
 import com.logistics.service.ReportService;
 import com.logistics.service.ShipmentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +30,10 @@ import java.util.List;
  *
  * SOLID Principles Applied:
  * - Single Responsibility (SRP): Handles only report-related HTTP endpoints.
- * - Dependency Inversion (DIP): Depends on ReportService interface.
+ *   Does not contain business logic - delegates to ReportService and ShipmentService.
+ * - Dependency Inversion (DIP): Depends on service interfaces (ReportService,
+ *   ShipmentService, CustomerService), not on concrete implementations or repositories.
+ *   This ensures proper layer separation and testability.
  *
  * Access Control:
  * - EMPLOYEE: Can access all reports
@@ -57,14 +59,14 @@ public class ReportController {
 
     private final ReportService reportService;
     private final ShipmentService shipmentService;
-    private final CustomerRepository customerRepository;
+    private final CustomerService customerService;
 
     public ReportController(ReportService reportService,
                             ShipmentService shipmentService,
-                            CustomerRepository customerRepository) {
+                            CustomerService customerService) {
         this.reportService = reportService;
         this.shipmentService = shipmentService;
-        this.customerRepository = customerRepository;
+        this.customerService = customerService;
     }
 
     /**
@@ -214,12 +216,19 @@ public class ReportController {
 
     /**
      * Gets the customer ID from the authenticated user.
+     * Uses CustomerService to maintain proper layer separation (DIP).
+     *
+     * @param authentication the current authentication context
+     * @return the customer ID for the authenticated user
+     * @throws UnauthorizedException if customer not found
      */
     private Long getCustomerIdFromAuth(Authentication authentication) {
         String username = authentication.getName();
-        Customer customer = customerRepository.findByUsername(username)
-                .orElseThrow(() -> new UnauthorizedException("Customer not found for user: " + username));
-        return customer.getId();
+        try {
+            return customerService.getCustomerIdByUsername(username);
+        } catch (Exception e) {
+            throw new UnauthorizedException("Customer not found for user: " + username);
+        }
     }
 
     /**

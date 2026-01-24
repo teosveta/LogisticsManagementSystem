@@ -1,211 +1,143 @@
 # Logistics Management System
 
-A **Spring Boot REST API** for managing a logistics company's operations including shipments, employees, customers, and offices.
+A Spring Boot REST API for managing a logistics company's shipments, employees, customers, and offices with JWT authentication and role-based access control.
 
-## Technology Stack
+## Tech Stack
 
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | Java | 17 | Programming Language |
 | Spring Boot | 3.2.0 | Application Framework |
-| Spring Data JPA | - | Database ORM |
 | Spring Security | - | Authentication & Authorization |
+| Spring Data JPA | - | Database ORM |
 | MySQL | 8.0 | Database |
-| JWT (jjwt) | 0.12.3 | Token-based Authentication |
+| JWT (jjwt) | 0.12.3 | Token Authentication |
 | Maven | - | Build Tool |
 | Swagger/OpenAPI | 2.3.0 | API Documentation |
+
+## Features
+
+- User authentication with JWT tokens
+- Role-based access control (EMPLOYEE / CUSTOMER)
+- Complete CRUD for Companies, Offices, Employees, Customers, Shipments
+- 8 comprehensive report endpoints
+- Database-driven pricing configuration
+- Automatic price calculation
+- Responsive frontend interface
 
 ## Project Structure
 
 ```
 src/main/java/com/logistics/
-├── LogisticsApplication.java       # Main entry point
-├── config/                         # Configuration classes
-│   ├── SecurityConfig.java         # Spring Security config
-│   └── OpenApiConfig.java          # Swagger config
-├── controller/                     # REST Controllers
-│   ├── AuthController.java
-│   ├── CompanyController.java
-│   ├── CustomerController.java
-│   ├── EmployeeController.java
-│   ├── OfficeController.java
-│   ├── ReportController.java
-│   └── ShipmentController.java
-├── dto/                            # Data Transfer Objects
-│   ├── auth/
-│   ├── company/
-│   ├── customer/
-│   ├── employee/
-│   ├── office/
-│   ├── report/
-│   └── shipment/
-├── exception/                      # Custom Exceptions
-│   ├── GlobalExceptionHandler.java
-│   ├── ResourceNotFoundException.java
-│   ├── UnauthorizedException.java
-│   └── InvalidDataException.java
+├── config/                     # Security & Swagger configuration
+├── controller/                 # REST endpoints (7 controllers)
+├── dto/                        # Request/Response objects with validation
+├── exception/                  # Global exception handling
 ├── model/
-│   ├── entity/                     # JPA Entities
-│   └── enums/                      # Enumerations
-├── repository/                     # JPA Repositories
-├── security/                       # JWT Security
-│   ├── JwtTokenProvider.java
-│   ├── JwtAuthenticationFilter.java
-│   └── CustomUserDetailsService.java
-├── service/                        # Service Interfaces
-│   └── impl/                       # Service Implementations
-└── util/                           # Utility Classes
-    └── EntityMapper.java
+│   ├── entity/                 # JPA entities (7 entities)
+│   └── enums/                  # Role, EmployeeType, ShipmentStatus
+├── repository/                 # Spring Data JPA repositories
+├── security/                   # JWT token provider & filter
+├── service/
+│   ├── *Service.java           # Service interfaces
+│   └── impl/                   # Service implementations
+└── util/                       # EntityMapper utility
+
+src/main/resources/
+├── static/                     # Frontend (HTML, CSS, JS)
+├── application.properties      # Configuration
+└── schema.sql                  # Database schema reference
 ```
 
-## Prerequisites
+## Setup Instructions
 
-1. **Java 17** or higher
-2. **MySQL 8.0** running on localhost:3306
-3. **Maven** (or use the included wrapper)
+### Prerequisites
+- Java 17+
+- Maven 3.8+
+- MySQL 8.0
 
-## Database Setup
+### Installation
 
-1. Start MySQL server
-2. Create the database:
-```sql
-CREATE DATABASE logistics_db;
-```
+1. **Clone the repository**
 
-3. The application will auto-create tables on startup (ddl-auto=update)
+2. **Create database**
+   ```sql
+   CREATE DATABASE logistics_db;
+   ```
 
-## Configuration
+3. **Configure database** in `src/main/resources/application.properties`:
+   ```properties
+   spring.datasource.url=jdbc:mysql://127.0.0.1:3306/logistics_db
+   spring.datasource.username=root
+   spring.datasource.password=your_password
+   ```
 
-Database settings in `src/main/resources/application.properties`:
-```properties
-spring.datasource.url=jdbc:mysql://127.0.0.1:3306/logistics_db
-spring.datasource.username=root
-spring.datasource.password=
-```
+4. **Run the application**
+   ```bash
+   mvn spring-boot:run
+   ```
 
-## Running the Application
+5. **Access the application**
+   - Frontend: http://localhost:8080
+   - Swagger UI: http://localhost:8080/swagger-ui.html
+   - API Docs: http://localhost:8080/api-docs
 
-### Option 1: Using Maven
-```bash
-# Build the project
-mvn clean install
+## API Endpoints
 
-# Run the application
-mvn spring-boot:run
-```
+### Authentication (Public)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | Login and get JWT token |
 
-### Option 2: Using JAR
-```bash
-# Build the JAR
-mvn clean package
+### Companies (Employee Only)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/companies` | Create company |
+| GET | `/api/companies` | Get all companies |
+| GET | `/api/companies/{id}` | Get company by ID |
+| PUT | `/api/companies/{id}` | Update company |
+| DELETE | `/api/companies/{id}` | Delete company |
 
-# Run the JAR
-java -jar target/logistics-management-system-1.0.0.jar
-```
+### Offices, Employees, Customers
+Same CRUD pattern as Companies at `/api/offices`, `/api/employees`, `/api/customers`
 
-The application will start at: **http://localhost:8080**
+### Shipments
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/shipments` | Register shipment (Employee) |
+| GET | `/api/shipments` | Get shipments (filtered by role) |
+| GET | `/api/shipments/{id}` | Get shipment by ID |
+| PATCH | `/api/shipments/{id}/status` | Update status (Employee) |
+| PUT | `/api/shipments/{id}` | Update shipment (Employee) |
+| DELETE | `/api/shipments/{id}` | Delete shipment (Employee) |
 
-## Loading Sample Data
+### Reports
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/reports/employees` | All employees (Employee) |
+| GET | `/api/reports/customers` | All customers (Employee) |
+| GET | `/api/reports/shipments` | All/own shipments |
+| GET | `/api/reports/shipments/employee/{id}` | By employee (Employee) |
+| GET | `/api/reports/shipments/pending` | Pending shipments (Employee) |
+| GET | `/api/reports/shipments/customer/{id}/sent` | Customer's sent |
+| GET | `/api/reports/shipments/customer/{id}/received` | Customer's received |
+| GET | `/api/reports/revenue?startDate=X&endDate=Y` | Revenue (Employee) |
 
-After the application starts, run the SQL in `src/main/resources/data.sql` to populate sample data.
-
-### Sample Users (Password: `password123` for all)
-
-| Username | Role | Description |
-|----------|------|-------------|
-| admin | EMPLOYEE | Office staff at Downtown |
-| john_courier | EMPLOYEE | Courier |
-| jane_courier | EMPLOYEE | Courier |
-| mike_staff | EMPLOYEE | Office staff at Airport |
-| sarah_staff | EMPLOYEE | Office staff at Uptown |
-| customer_alice | CUSTOMER | Customer |
-| customer_bob | CUSTOMER | Customer |
-| customer_carol | CUSTOMER | Customer |
-| customer_david | CUSTOMER | Customer |
-| customer_emma | CUSTOMER | Customer |
-
-## API Documentation
-
-### Swagger UI
-Access the interactive API documentation at:
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **OpenAPI JSON**: http://localhost:8080/api-docs
-
-### Quick Start: Authentication
-
-1. **Login to get JWT token:**
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "password123"}'
-```
-
-2. **Use the token in subsequent requests:**
-```bash
-curl -X GET http://localhost:8080/api/shipments \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
-
-### Register New User
-```bash
-curl -X POST http://localhost:8080/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "newuser",
-    "email": "newuser@email.com",
-    "password": "password123",
-    "role": "CUSTOMER"
-  }'
-```
-
-### Create Shipment (Employee only)
-```bash
-curl -X POST http://localhost:8080/api/shipments \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "senderId": 1,
-    "recipientId": 2,
-    "deliveryOfficeId": 1,
-    "weight": 5.0
-  }'
-```
-
-### Update Shipment Status (Employee only)
-```bash
-curl -X PATCH http://localhost:8080/api/shipments/1/status \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"status": "IN_TRANSIT"}'
-```
-
-### Get Revenue Report (Employee only)
-```bash
-curl -X GET "http://localhost:8080/api/reports/revenue?startDate=2024-01-01&endDate=2024-12-31" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
-
-## Access Control
-
-| Feature | EMPLOYEE | CUSTOMER |
-|---------|----------|----------|
-| View all shipments | ✓ | ✗ |
-| View own shipments | ✓ | ✓ |
-| Create shipments | ✓ | ✗ |
-| Update shipment status | ✓ | ✗ |
-| Manage companies/offices | ✓ | ✗ |
-| Manage employees/customers | ✓ | ✗ |
-| Access all reports | ✓ | ✗ |
-| Access own sent/received reports | ✓ | ✓ |
+### Pricing (Employee Only)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/pricing/config` | Get pricing configuration |
+| PUT | `/api/pricing/config` | Update pricing |
 
 ## Pricing Formula
 
 ```
-Total Price = Base Price + (Weight × Price per kg) + Delivery Type Fee
+Total Price = Base Price + (Weight × Price Per Kg) + Delivery Fee
 
-Default values:
+Default values (stored in database):
 - Base Price: 5.00
-- Price per kg: 2.00
+- Price Per Kg: 2.00
 - Address Delivery Fee: 10.00
 - Office Delivery Fee: 0.00
 
@@ -214,20 +146,69 @@ Examples:
 - 5kg to address: 5.00 + (5 × 2.00) + 10.00 = 25.00
 ```
 
+## Access Control
+
+| Feature | EMPLOYEE | CUSTOMER |
+|---------|----------|----------|
+| View all shipments | Yes | No |
+| View own shipments | Yes | Yes |
+| Create/edit/delete shipments | Yes | No |
+| Manage companies/offices | Yes | No |
+| Manage employees/customers | Yes | No |
+| Access all reports | Yes | No |
+| Access own sent/received reports | Yes | Yes |
+
 ## SOLID Principles
 
-This project strictly follows SOLID principles. See [SOLID_PRINCIPLES.md](SOLID_PRINCIPLES.md) for detailed explanations with code examples.
+This project follows SOLID principles:
 
-## API Endpoints
+**Single Responsibility (SRP):** Each service handles one domain. PricingService only calculates prices, ShipmentService only manages shipments, ReportService only generates reports.
 
-See [API_ENDPOINTS.md](API_ENDPOINTS.md) for complete endpoint documentation with request/response examples.
+**Open/Closed (OCP):** Pricing is configurable via database without code changes. New exception handlers can be added without modifying existing ones.
 
-## Error Handling
+**Liskov Substitution (LSP):** All service implementations are interchangeable via interfaces. Controllers depend on interfaces, allowing easy substitution for testing.
 
-All errors return a consistent JSON format:
+**Interface Segregation (ISP):** Small, focused interfaces for each domain. Separate DTOs for different operations (ShipmentRequest vs ShipmentStatusUpdateRequest).
+
+**Dependency Inversion (DIP):** Controllers depend on service interfaces, not implementations. Services depend on repository interfaces. This ensures proper layer separation.
+
+## Database Schema
+
+```
+users          → Authentication data (username, email, password, role)
+companies      → Logistics companies
+offices        → Company branches (belongs to company)
+employees      → Staff members (belongs to user, company, office)
+customers      → Clients (belongs to user)
+shipments      → Deliveries (links sender, recipient, employee, offices)
+pricing_config → Configurable pricing values
+```
+
+See `src/main/resources/schema.sql` for complete DDL.
+
+## Testing
+
+```bash
+# Run all tests
+mvn test
+
+# Run with coverage report
+mvn test jacoco:report
+# View report: target/site/jacoco/index.html
+```
+
+Test classes:
+- `PricingServiceTest` - Unit tests for pricing calculations
+- `ShipmentServiceTest` - Unit tests for shipment operations
+- `AuthControllerTest` - Integration tests for authentication
+- `CustomerControllerTest` - Integration tests for customer endpoints
+
+## Error Responses
+
+All errors return consistent JSON format:
 ```json
 {
-  "timestamp": "2024-01-19T10:30:00",
+  "timestamp": "2024-01-19T10:00:00",
   "status": 404,
   "error": "Not Found",
   "message": "Shipment not found with id: 999",
@@ -235,8 +216,8 @@ All errors return a consistent JSON format:
 }
 ```
 
-| HTTP Status | Meaning |
-|-------------|---------|
+| Status | Meaning |
+|--------|---------|
 | 200 | Success |
 | 201 | Created |
 | 400 | Bad Request (validation error) |
@@ -244,8 +225,7 @@ All errors return a consistent JSON format:
 | 403 | Forbidden (insufficient permissions) |
 | 404 | Resource Not Found |
 | 409 | Conflict (duplicate resource) |
-| 500 | Internal Server Error |
 
 ## License
 
-MIT License
+University Project

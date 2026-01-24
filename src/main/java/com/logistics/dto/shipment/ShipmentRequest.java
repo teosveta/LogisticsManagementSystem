@@ -30,6 +30,12 @@ public class ShipmentRequest {
     private Long recipientId;
 
     /**
+     * Origin office ID where the shipment is being registered.
+     * Optional - if not provided, uses the registering employee's office.
+     */
+    private Long originOfficeId;
+
+    /**
      * Delivery address for address-based deliveries.
      * Mutually exclusive with deliveryOfficeId.
      */
@@ -71,6 +77,14 @@ public class ShipmentRequest {
 
     public void setRecipientId(Long recipientId) {
         this.recipientId = recipientId;
+    }
+
+    public Long getOriginOfficeId() {
+        return originOfficeId;
+    }
+
+    public void setOriginOfficeId(Long originOfficeId) {
+        this.originOfficeId = originOfficeId;
     }
 
     public String getDeliveryAddress() {

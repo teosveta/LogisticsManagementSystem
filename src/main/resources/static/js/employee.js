@@ -153,16 +153,11 @@ async function renderRegisterShipment() {
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Origin Office</label>
-                        <select id="originOfficeId" required>
-                            ${createSelectOptions(offices, 'id', o => `${o.name} - ${o.address}`, null, 'Select origin office...')}
-                        </select>
-                    </div>
-                    <div class="form-group">
                         <label>Destination Office</label>
                         <select id="destinationOfficeId" required>
                             ${createSelectOptions(offices, 'id', o => `${o.name} - ${o.address}`, null, 'Select destination office...')}
                         </select>
+                        <small class="form-hint">Origin office is automatically set from your assigned office</small>
                     </div>
                 </div>
                 <div class="form-row">

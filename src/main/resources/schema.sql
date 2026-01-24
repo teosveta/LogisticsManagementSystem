@@ -112,6 +112,7 @@ CREATE TABLE IF NOT EXISTS shipments (
     sender_id BIGINT NOT NULL,
     recipient_id BIGINT NOT NULL,
     registered_by_id BIGINT NOT NULL,
+    origin_office_id BIGINT,
     delivery_address VARCHAR(255),
     delivery_office_id BIGINT,
     weight DECIMAL(10,2) NOT NULL,
@@ -124,10 +125,12 @@ CREATE TABLE IF NOT EXISTS shipments (
     FOREIGN KEY (sender_id) REFERENCES customers(id),
     FOREIGN KEY (recipient_id) REFERENCES customers(id),
     FOREIGN KEY (registered_by_id) REFERENCES employees(id),
+    FOREIGN KEY (origin_office_id) REFERENCES offices(id),
     FOREIGN KEY (delivery_office_id) REFERENCES offices(id),
     INDEX idx_shipments_sender (sender_id),
     INDEX idx_shipments_recipient (recipient_id),
     INDEX idx_shipments_employee (registered_by_id),
+    INDEX idx_shipments_origin_office (origin_office_id),
     INDEX idx_shipments_status (status),
     INDEX idx_shipments_delivered_at (delivered_at)
 );
