@@ -1,56 +1,56 @@
-# Logistics Management System - Presentation Guide
+# Система за управление на логистика - Ръководство за презентация
 
-## Complete Study Guide and Presentation Script
+## Пълно ръководство за подготовка и скрипт за презентация
 
-This document teaches you how to present your Logistics Management System to your professor. Use it as both a presentation script and a study guide for defending your technical decisions.
-
----
-
-## Table of Contents
-
-1. [Project Introduction (2-3 minutes)](#section-1-project-introduction)
-2. [Architecture Overview (5 minutes)](#section-2-architecture-overview)
-3. [SOLID Principles Implementation (10 minutes)](#section-3-solid-principles-implementation)
-4. [Database Design (5 minutes)](#section-4-database-design)
-5. [Security Implementation (5 minutes)](#section-5-security-implementation)
-6. [Pricing System (5 minutes)](#section-6-pricing-system)
-7. [Validation Strategy (4 minutes)](#section-7-validation-strategy)
-8. [Access Control Logic (3 minutes)](#section-8-access-control-logic)
-9. [Report Generation (3 minutes)](#section-9-report-generation)
-10. [Testing Approach (3 minutes)](#section-10-testing-approach)
-11. [Code Quality Highlights (2 minutes)](#section-11-code-quality-highlights)
-12. [Live Demonstration Script](#section-12-live-demonstration-script)
-13. [Common Questions & Answers](#section-13-common-questions--answers)
-14. [Project Strengths to Highlight](#section-14-project-strengths-to-highlight)
-15. [Technical Decisions Justification](#section-15-technical-decisions-justification)
+Този документ ви учи как да представите вашата Система за управление на логистика пред преподавателя. Използвайте го както като скрипт за презентация, така и като ръководство за защита на техническите ви решения.
 
 ---
 
-## SECTION 1: Project Introduction
+## Съдържание
 
-**Duration: 2-3 minutes**
+1. [Въведение в проекта (2-3 минути)](#секция-1-въведение-в-проекта)
+2. [Преглед на архитектурата (5 минути)](#секция-2-преглед-на-архитектурата)
+3. [Имплементация на SOLID принципите (10 минути)](#секция-3-имплементация-на-solid-принципите)
+4. [Дизайн на базата данни (5 минути)](#секция-4-дизайн-на-базата-данни)
+5. [Имплементация на сигурност (5 минути)](#секция-5-имплементация-на-сигурност)
+6. [Система за ценообразуване (5 минути)](#секция-6-система-за-ценообразуване)
+7. [Стратегия за валидация (4 минути)](#секция-7-стратегия-за-валидация)
+8. [Логика за контрол на достъпа (3 минути)](#секция-8-логика-за-контрол-на-достъпа)
+9. [Генериране на справки (3 минути)](#секция-9-генериране-на-справки)
+10. [Подход към тестването (3 минути)](#секция-10-подход-към-тестването)
+11. [Акценти върху качеството на кода (2 минути)](#секция-11-акценти-върху-качеството-на-кода)
+12. [Скрипт за демонстрация на живо](#секция-12-скрипт-за-демонстрация-на-живо)
+13. [Често задавани въпроси и отговори](#секция-13-често-задавани-въпроси-и-отговори)
+14. [Силни страни на проекта за подчертаване](#секция-14-силни-страни-на-проекта-за-подчертаване)
+15. [Обосновка на техническите решения](#секция-15-обосновка-на-техническите-решения)
 
-### What to Say
+---
 
-> "I've built a REST API for a logistics company management system using Spring Boot 3.2 and Java 17. The system handles the complete lifecycle of shipment management - from registration and pricing calculation to tracking and delivery confirmation.
+## СЕКЦИЯ 1: Въведение в проекта
+
+**Продължителност: 2-3 минути**
+
+### Какво да кажете
+
+> "Изградих REST API за система за управление на логистична компания, използвайки Spring Boot 3.2 и Java 17. Системата обработва пълния жизнен цикъл на управлението на пратки - от регистрация и изчисляване на цена до проследяване и потвърждаване на доставка.
 >
-> The key business features include:
-> - User authentication with role-based access control (Employees and Customers)
-> - Company and office management
-> - Shipment registration with automatic price calculation
-> - Shipment status tracking through its lifecycle
-> - Comprehensive reporting including revenue analysis
+> Ключовите бизнес функции включват:
+> - Автентикация на потребители с контрол на достъпа, базиран на роли (Служители и Клиенти)
+> - Управление на компании и офиси
+> - Регистрация на пратки с автоматично изчисляване на цена
+> - Проследяване на статус на пратка през жизнения ѝ цикъл
+> - Изчерпателни справки, включително анализ на приходите
 >
-> I chose this technology stack because Spring Boot is the industry standard for enterprise Java applications, and Java 17 is the current Long-Term Support version with modern language features."
+> Избрах този технологичен стек, защото Spring Boot е индустриален стандарт за enterprise Java приложения, а Java 17 е текущата версия с дългосрочна поддръжка (LTS) с модерни езикови функции."
 
-### Project Structure to Show
+### Структура на проекта за показване
 
 ```
 src/main/java/com/logistics/
-├── config/                    # Security and OpenAPI configuration
+├── config/                    # Конфигурация за сигурност и OpenAPI
 │   ├── SecurityConfig.java
 │   └── OpenApiConfig.java
-├── controller/                # 8 REST controllers
+├── controller/                # 8 REST контролера
 │   ├── AuthController.java
 │   ├── CompanyController.java
 │   ├── CustomerController.java
@@ -59,23 +59,23 @@ src/main/java/com/logistics/
 │   ├── PricingController.java
 │   ├── ShipmentController.java
 │   └── ReportController.java
-├── dto/                       # Request/Response DTOs
-├── exception/                 # Global exception handling
+├── dto/                       # Request/Response DTO
+├── exception/                 # Глобална обработка на изключения
 ├── model/
 │   ├── entity/               # 7 JPA entities
-│   └── enums/                # 3 enums (Role, ShipmentStatus, EmployeeType)
-├── repository/               # 7 Spring Data JPA repositories
-├── security/                 # JWT authentication
+│   └── enums/                # 3 enum-а (Role, ShipmentStatus, EmployeeType)
+├── repository/               # 7 Spring Data JPA хранилища
+├── security/                 # JWT автентикация
 ├── service/
-│   ├── interfaces           # 8 service interfaces
-│   └── impl/                # 8 service implementations
+│   ├── interfaces           # 8 service интерфейса
+│   └── impl/                # 8 service имплементации
 └── util/
-    └── EntityMapper.java    # Entity to DTO conversion
+    └── EntityMapper.java    # Конвертиране от Entity към DTO
 ```
 
-### Key Dependencies (pom.xml)
+### Ключови зависимости (pom.xml)
 
-**Show this excerpt:**
+**Покажете този откъс:**
 
 ```xml
 <properties>
@@ -84,38 +84,38 @@ src/main/java/com/logistics/
 </properties>
 
 <dependencies>
-    <!-- Spring Boot Web - REST API support -->
+    <!-- Spring Boot Web - поддръжка на REST API -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
-    <!-- Spring Data JPA - Database ORM with Hibernate -->
+    <!-- Spring Data JPA - Database ORM с Hibernate -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
 
-    <!-- Spring Security - Authentication and Authorization -->
+    <!-- Spring Security - Автентикация и оторизация -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
-    <!-- Spring Validation - DTO validation (@Valid, @NotNull, etc.) -->
+    <!-- Spring Validation - DTO валидация (@Valid, @NotNull и т.н.) -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
 
-    <!-- JWT Dependencies - Token-based authentication -->
+    <!-- JWT зависимости - Автентикация, базирана на токени -->
     <dependency>
         <groupId>io.jsonwebtoken</groupId>
         <artifactId>jjwt-api</artifactId>
         <version>${jjwt.version}</version>
     </dependency>
 
-    <!-- MySQL Connector - Database driver -->
+    <!-- MySQL Connector - Драйвер за база данни -->
     <dependency>
         <groupId>com.mysql</groupId>
         <artifactId>mysql-connector-j</artifactId>
@@ -123,73 +123,73 @@ src/main/java/com/logistics/
 </dependencies>
 ```
 
-### Key Talking Points
+### Ключови точки за разговор
 
-- Java 17 is the current LTS (Long-Term Support) version with performance improvements
-- Spring Boot 3.2 provides rapid development with production-ready features
-- MySQL 8.0 for ACID-compliant relational data storage
-- JWT for stateless, scalable authentication
-- Spring Data JPA with Hibernate for ORM
+- Java 17 е текущата LTS (Long-Term Support) версия с подобрения в производителността
+- Spring Boot 3.2 осигурява бърза разработка с функции, готови за продукция
+- MySQL 8.0 за ACID-съвместимо съхранение на релационни данни
+- JWT за stateless, мащабируема автентикация
+- Spring Data JPA с Hibernate за ORM
 
 ---
 
-## SECTION 2: Architecture Overview
+## СЕКЦИЯ 2: Преглед на архитектурата
 
-**Duration: 5 minutes**
+**Продължителност: 5 минути**
 
-### What to Explain
+### Какво да обясните
 
-> "The system follows a classic three-layer architecture that enforces separation of concerns. Each layer has a specific responsibility, and layers only communicate through well-defined interfaces."
+> "Системата следва класическа трислойна архитектура, която налага разделяне на отговорностите. Всеки слой има специфична отговорност и слоевете комуникират само чрез добре дефинирани интерфейси."
 
-### Architecture Diagram
+### Диаграма на архитектурата
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│              (Controllers - REST Endpoints)                  │
-│   Handles: HTTP requests, validation, response formatting    │
-│   Example: ShipmentController, AuthController                │
+│                    ПРЕЗЕНТАЦИОНЕН СЛОЙ                       │
+│              (Контролери - REST крайни точки)                │
+│   Обработва: HTTP заявки, валидация, форматиране на отговори │
+│   Пример: ShipmentController, AuthController                 │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                    BUSINESS LOGIC LAYER                      │
-│                (Services - Core Logic)                       │
-│   Handles: Business rules, orchestration, transactions       │
-│   Example: ShipmentServiceImpl, PricingServiceImpl           │
+│                    СЛОЙ НА БИЗНЕС ЛОГИКА                     │
+│                (Услуги - Основна логика)                     │
+│   Обработва: Бизнес правила, оркестрация, транзакции         │
+│   Пример: ShipmentServiceImpl, PricingServiceImpl            │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                    DATA ACCESS LAYER                         │
-│              (Repositories - Database Access)                │
-│   Handles: CRUD operations, custom queries                   │
-│   Example: ShipmentRepository, CustomerRepository            │
+│                    СЛОЙ ЗА ДОСТЪП ДО ДАННИ                   │
+│              (Хранилища - Достъп до база данни)              │
+│   Обработва: CRUD операции, персонализирани заявки           │
+│   Пример: ShipmentRepository, CustomerRepository             │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                    DATABASE LAYER                            │
+│                    СЛОЙ НА БАЗА ДАННИ                        │
 │                      (MySQL 8.0)                             │
-│   Stores: Persistent data with ACID compliance               │
+│   Съхранява: Постоянни данни с ACID съвместимост             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Code Example: ShipmentController (Presentation Layer)
+### Примерен код: ShipmentController (Презентационен слой)
 
-**File: `controller/ShipmentController.java` (lines 38-52)**
+**Файл: `controller/ShipmentController.java` (редове 38-52)**
 
 ```java
 /**
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only shipment-related HTTP endpoints.
- *   Does not contain business logic - delegates to ShipmentService.
- * - Dependency Inversion (DIP): Depends on service interfaces (ShipmentService,
- *   CustomerService), not on concrete implementations or repositories.
+ * Приложени SOLID принципи:
+ * - Единствена отговорност (SRP): Обработва само HTTP крайни точки, свързани с пратки.
+ *   Не съдържа бизнес логика - делегира към ShipmentService.
+ * - Обръщане на зависимостите (DIP): Зависи от service интерфейси (ShipmentService,
+ *   CustomerService), не от конкретни имплементации или хранилища.
  */
 @RestController
 @RequestMapping("/api/shipments")
 public class ShipmentController {
 
-    private final ShipmentService shipmentService;    // INTERFACE, not implementation!
-    private final CustomerService customerService;    // INTERFACE, not implementation!
+    private final ShipmentService shipmentService;    // ИНТЕРФЕЙС, не имплементация!
+    private final CustomerService customerService;    // ИНТЕРФЕЙС, не имплементация!
 
     public ShipmentController(ShipmentService shipmentService, CustomerService customerService) {
         this.shipmentService = shipmentService;
@@ -197,82 +197,82 @@ public class ShipmentController {
     }
 ```
 
-### What to Say About This Code
+### Какво да кажете за този код
 
-> "Notice that the controller injects `ShipmentService` and `CustomerService` - these are **interfaces**, not concrete implementations. The controller doesn't know or care about `ShipmentServiceImpl`. This is the **Dependency Inversion Principle** in action.
+> "Забележете, че контролерът инжектира `ShipmentService` и `CustomerService` - това са **интерфейси**, не конкретни имплементации. Контролерът не знае и не се интересува от `ShipmentServiceImpl`. Това е **Принципът на обръщане на зависимостите** в действие.
 >
-> The controller only handles HTTP concerns - parsing requests, calling the service, and formatting responses. All business logic is delegated to the service layer. This is the **Single Responsibility Principle**."
+> Контролерът обработва само HTTP проблеми - парсване на заявки, извикване на услугата и форматиране на отговори. Цялата бизнес логика е делегирана към service слоя. Това е **Принципът на единствената отговорност**."
 
-### Code Example: Service Method Delegation
+### Примерен код: Делегиране на Service метод
 
-**File: `controller/ShipmentController.java` (lines 58-70)**
+**Файл: `controller/ShipmentController.java` (редове 58-70)**
 
 ```java
 @PostMapping
-@PreAuthorize("hasRole('EMPLOYEE')")  // Security annotation - only employees can register
+@PreAuthorize("hasRole('EMPLOYEE')")  // Анотация за сигурност - само служители могат да регистрират
 public ResponseEntity<ShipmentResponse> registerShipment(
-        @Valid @RequestBody ShipmentRequest request,  // @Valid triggers DTO validation
+        @Valid @RequestBody ShipmentRequest request,  // @Valid задейства DTO валидация
         Authentication authentication) {
 
     String employeeUsername = authentication.getName();
 
-    // Controller delegates ALL business logic to the service
+    // Контролерът делегира ЦЯЛАТА бизнес логика към услугата
     ShipmentResponse response = shipmentService.registerShipment(request, employeeUsername);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
 }
 ```
 
-### Professor Might Ask
+### Преподавателят може да попита
 
-**Q: "Why use interfaces instead of concrete classes?"**
+**В: "Защо използвате интерфейси вместо конкретни класове?"**
 
-**A:** "Using interfaces provides three key benefits:
-1. **Testability**: I can easily mock the interface in unit tests without needing the real implementation
-2. **Flexibility**: I can swap implementations without changing the controller code (e.g., different pricing strategies)
-3. **Loose coupling**: The controller doesn't depend on implementation details, only on the contract defined by the interface"
+**О:** "Използването на интерфейси осигурява три ключови предимства:
+1. **Тестваемост**: Мога лесно да мокна интерфейса в unit тестове без да имам нужда от реалната имплементация
+2. **Гъвкавост**: Мога да заменям имплементации без да променям кода на контролера (напр. различни стратегии за ценообразуване)
+3. **Слаба свързаност**: Контролерът не зависи от детайли на имплементацията, само от контракта, дефиниран от интерфейса"
 
-**Q: "What happens if you inject the repository directly into the controller?"**
+**В: "Какво се случва, ако инжектирате хранилището директно в контролера?"**
 
-**A:** "That would violate the layered architecture and create several problems:
-1. Business logic would leak into the controller
-2. The controller would have too many responsibilities (SRP violation)
-3. Transaction management becomes harder because `@Transactional` belongs on services
-4. Testing becomes more difficult because you can't easily mock database operations"
-
----
-
-## SECTION 3: SOLID Principles Implementation
-
-**Duration: 10 minutes** (Most important section!)
-
-### Overview
-
-> "I implemented all five SOLID principles throughout the codebase. Let me demonstrate each one with specific code examples."
+**О:** "Това би нарушило слоестата архитектура и би създало няколко проблема:
+1. Бизнес логиката би изтекла в контролера
+2. Контролерът би имал твърде много отговорности (нарушение на SRP)
+3. Управлението на транзакции става по-трудно, защото `@Transactional` принадлежи на услугите
+4. Тестването става по-трудно, защото не можете лесно да мокнете операции с база данни"
 
 ---
 
-### A. Single Responsibility Principle (SRP)
+## СЕКЦИЯ 3: Имплементация на SOLID принципите
 
-**Definition:** Each class should have one, and only one, reason to change.
+**Продължителност: 10 минути** (Най-важната секция!)
 
-#### Code Example: PricingServiceImpl
+### Преглед
 
-**File: `service/impl/PricingServiceImpl.java` (lines 15-31)**
+> "Имплементирах всичките пет SOLID принципа в цялата кодова база. Позволете ми да демонстрирам всеки един с конкретни примери от кода."
+
+---
+
+### А. Принцип на единствената отговорност (SRP)
+
+**Дефиниция:** Всеки клас трябва да има една и само една причина за промяна.
+
+#### Примерен код: PricingServiceImpl
+
+**Файл: `service/impl/PricingServiceImpl.java` (редове 15-31)**
 
 ```java
 /**
- * Implementation of PricingService that loads configuration from the DATABASE.
+ * Имплементация на PricingService, която зарежда конфигурация от БАЗАТА ДАННИ.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This class ONLY handles pricing calculations.
- *   It doesn't persist data or validate shipments - those are other services' jobs.
- * - Open/Closed (OCP): Configuration is stored in database, so pricing
- *   can be changed without modifying code or redeploying.
- * - Dependency Inversion (DIP): Depends on PricingConfigRepository interface.
+ * Приложени SOLID принципи:
+ * - Единствена отговорност (SRP): Този клас САМО обработва изчисления за ценообразуване.
+ *   Не запазва данни и не валидира пратки - това са задачи на други услуги.
+ * - Отворен/Затворен (OCP): Конфигурацията се съхранява в база данни, така че ценообразуването
+ *   може да се промени без модификация на кода или повторно разгръщане.
+ * - Обръщане на зависимостите (DIP): Зависи от интерфейса PricingConfigRepository.
  *
- * Pricing Formula:
- * Total = Base Price + (Weight × Price per kg) + Delivery Type Fee
+ * Формула за ценообразуване:
+ * Общо = Базова цена + (Тегло × Цена на кг) + Такса за тип доставка
  */
 @Service
 public class PricingServiceImpl implements PricingService {
@@ -284,71 +284,71 @@ public class PricingServiceImpl implements PricingService {
     }
 ```
 
-#### What to Say
+#### Какво да кажете
 
-> "PricingService has **one responsibility**: calculate shipment prices. It does NOT:
-> - Create shipments - that's ShipmentService's job
-> - Save to database - that's the repository's job
-> - Handle HTTP requests - that's the controller's job
+> "PricingService има **една отговорност**: да изчислява цени на пратки. НЕ:
+> - Създава пратки - това е работата на ShipmentService
+> - Записва в база данни - това е работата на хранилището
+> - Обработва HTTP заявки - това е работата на контролера
 >
-> If pricing rules change, I only modify this one class. If shipment creation logic changes, PricingService remains untouched. This isolation makes the code easier to test and maintain."
+> Ако правилата за ценообразуване се променят, модифицирам само този един клас. Ако логиката за създаване на пратки се промени, PricingService остава непроменен. Тази изолация прави кода по-лесен за тестване и поддръжка."
 
-#### More SRP Examples
+#### Повече SRP примери
 
-| Class | Single Responsibility |
-|-------|----------------------|
-| `ShipmentController` | HTTP endpoint handling for shipments |
-| `ShipmentServiceImpl` | Shipment business logic |
-| `ShipmentRepository` | Database operations for shipments |
-| `GlobalExceptionHandler` | Exception-to-response conversion |
-| `JwtTokenProvider` | JWT token generation and validation |
-| `EntityMapper` | Entity to DTO conversion |
+| Клас | Единствена отговорност |
+|------|----------------------|
+| `ShipmentController` | Обработка на HTTP крайни точки за пратки |
+| `ShipmentServiceImpl` | Бизнес логика за пратки |
+| `ShipmentRepository` | Операции с база данни за пратки |
+| `GlobalExceptionHandler` | Конвертиране на изключения в отговори |
+| `JwtTokenProvider` | Генериране и валидиране на JWT токени |
+| `EntityMapper` | Конвертиране от Entity към DTO |
 
 ---
 
-### B. Open/Closed Principle (OCP)
+### Б. Принцип отворен/затворен (OCP)
 
-**Definition:** Software entities should be open for extension but closed for modification.
+**Дефиниция:** Софтуерните обекти трябва да са отворени за разширение, но затворени за модификация.
 
-#### Code Example: Database-Driven Pricing
+#### Примерен код: Ценообразуване, управлявано от база данни
 
-**File: `service/impl/PricingServiceImpl.java` (lines 64-88)**
+**Файл: `service/impl/PricingServiceImpl.java` (редове 64-88)**
 
 ```java
 @Override
 @Transactional(readOnly = true)
 public BigDecimal calculatePrice(BigDecimal weight, boolean isOfficeDelivery) {
-    // Configuration comes from DATABASE, not hardcoded values
+    // Конфигурацията идва от БАЗАТА ДАННИ, не от хардкоднати стойности
     PricingConfig config = getActiveConfig();
 
-    // Step 1: Start with base price
+    // Стъпка 1: Започваме с базовата цена
     BigDecimal total = config.getBasePrice();
 
-    // Step 2: Add weight-based cost (weight × price per kg)
+    // Стъпка 2: Добавяме разход, базиран на теглото (тегло × цена на кг)
     BigDecimal weightCost = weight.multiply(config.getPricePerKg());
     total = total.add(weightCost);
 
-    // Step 3: Add delivery type fee (0 for office, addressDeliveryFee for address)
+    // Стъпка 3: Добавяме такса за тип доставка (0 за офис, addressDeliveryFee за адрес)
     if (!isOfficeDelivery) {
         total = total.add(config.getAddressDeliveryFee());
     }
 
-    // Round to 2 decimal places for currency
+    // Закръгляме до 2 десетични знака за валута
     total = total.setScale(2, RoundingMode.HALF_UP);
 
     return total;
 }
 ```
 
-#### What to Say
+#### Какво да кажете
 
-> "The pricing system is **open for extension** - I can change pricing at any time by updating the database, without touching the code. It's **closed for modification** - the calculation logic doesn't need to change when pricing values change.
+> "Системата за ценообразуване е **отворена за разширение** - мога да променям цените по всяко време чрез актуализиране на базата данни, без да пипам кода. Тя е **затворена за модификация** - логиката за изчисление не трябва да се променя, когато стойностите на цените се променят.
 >
-> If I had hardcoded prices like `basePrice = 5.00`, I would need to modify the code and redeploy every time prices change. With database configuration, I just update a row and the new prices take effect immediately."
+> Ако бях хардкоднал цени като `basePrice = 5.00`, щях да трябва да модифицирам кода и да правя повторно разгръщане всеки път, когато цените се променят. С конфигурация от база данни просто актуализирам ред и новите цени влизат в сила незабавно."
 
-#### Enum Extensibility
+#### Разширяемост на Enum
 
-**File: `model/enums/ShipmentStatus.java`**
+**Файл: `model/enums/ShipmentStatus.java`**
 
 ```java
 public enum ShipmentStatus {
@@ -356,23 +356,23 @@ public enum ShipmentStatus {
     IN_TRANSIT,
     DELIVERED,
     CANCELLED
-    // Can add new statuses (e.g., PROCESSING, RETURNED) without changing existing code
+    // Могат да се добавят нови статуси (напр. PROCESSING, RETURNED) без промяна на съществуващия код
 }
 ```
 
-> "If we need new shipment statuses like PROCESSING or RETURNED, we just add them to the enum. Existing status handling code continues to work unchanged."
+> "Ако имаме нужда от нови статуси на пратки като PROCESSING или RETURNED, просто ги добавяме към enum-а. Съществуващият код за обработка на статуси продължава да работи непроменен."
 
 ---
 
-### C. Liskov Substitution Principle (LSP)
+### В. Принцип на заместване на Лисков (LSP)
 
-**Definition:** Objects of a superclass should be replaceable with objects of its subclasses without affecting correctness.
+**Дефиниция:** Обектите от суперклас трябва да могат да бъдат заменени с обекти от неговите подкласове, без да се засяга коректността.
 
-#### Design Decision: Composition Over Inheritance
+#### Дизайнерско решение: Композиция вместо наследяване
 
-> "I deliberately avoided problematic inheritance hierarchies. Instead of having Employee and Customer extend User, I used **composition**."
+> "Съзнателно избягвах проблематични йерархии на наследяване. Вместо Employee и Customer да наследяват User, използвах **композиция**."
 
-**File: `model/entity/Employee.java` (lines 20-25)**
+**Файл: `model/entity/Employee.java` (редове 20-25)**
 
 ```java
 @Entity
@@ -380,7 +380,7 @@ public class Employee {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;  // COMPOSITION - Employee HAS a User, doesn't extend User
+    private User user;  // КОМПОЗИЦИЯ - Employee ИМА User, не наследява User
 
     private String employeeType;
     private BigDecimal salary;
@@ -388,7 +388,7 @@ public class Employee {
 }
 ```
 
-**File: `model/entity/Customer.java` (lines 20-25)**
+**Файл: `model/entity/Customer.java` (редове 20-25)**
 
 ```java
 @Entity
@@ -396,7 +396,7 @@ public class Customer {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;  // COMPOSITION - Customer HAS a User, doesn't extend User
+    private User user;  // КОМПОЗИЦИЯ - Customer ИМА User, не наследява User
 
     private String phone;
     private String address;
@@ -404,19 +404,19 @@ public class Customer {
 }
 ```
 
-#### What to Say
+#### Какво да кажете
 
-> "I avoided the classic inheritance pitfall where Employee and Customer would extend User. This would cause LSP violations because:
-> 1. Not all User operations make sense for both subtypes
-> 2. Employee and Customer have very different additional fields
-> 3. A User could be both an Employee AND a Customer
+> "Избягвах класическия капан на наследяването, където Employee и Customer биха наследили User. Това би причинило LSP нарушения, защото:
+> 1. Не всички User операции имат смисъл за двата подтипа
+> 2. Employee и Customer имат много различни допълнителни полета
+> 3. Един User може да бъде едновременно Employee И Customer
 >
-> Instead, I used composition: Employee and Customer both **reference** a User entity. This is more flexible and avoids LSP violations."
+> Вместо това използвах композиция: Employee и Customer и двете **референцират** User entity. Това е по-гъвкаво и избягва LSP нарушения."
 
-#### Interface Implementation LSP
+#### LSP при имплементация на интерфейс
 
 ```java
-// Any implementation of ShipmentService can be substituted
+// Всяка имплементация на ShipmentService може да бъде заменена
 public interface ShipmentService {
     ShipmentResponse registerShipment(ShipmentRequest request, String employeeUsername);
     ShipmentResponse getShipmentById(Long id);
@@ -424,7 +424,7 @@ public interface ShipmentService {
     // ...
 }
 
-// This implementation can be swapped with another without breaking controllers
+// Тази имплементация може да бъде заменена с друга без да се счупят контролерите
 public class ShipmentServiceImpl implements ShipmentService {
     // ...
 }
@@ -432,13 +432,13 @@ public class ShipmentServiceImpl implements ShipmentService {
 
 ---
 
-### D. Interface Segregation Principle (ISP)
+### Г. Принцип на разделяне на интерфейса (ISP)
 
-**Definition:** No client should be forced to depend on methods it does not use.
+**Дефиниция:** Никой клиент не трябва да бъде принуждаван да зависи от методи, които не използва.
 
-#### Code Example: Focused Service Interfaces
+#### Примерен код: Фокусирани Service интерфейси
 
-**File: `service/PricingService.java`**
+**Файл: `service/PricingService.java`**
 
 ```java
 public interface PricingService {
@@ -446,11 +446,11 @@ public interface PricingService {
     BigDecimal getBasePrice();
     BigDecimal getPricePerKg();
     BigDecimal getAddressDeliveryFee();
-    // Only 4 methods - all related to pricing. No bloat!
+    // Само 4 метода - всички свързани с ценообразуване. Без излишества!
 }
 ```
 
-**File: `service/ShipmentService.java`**
+**Файл: `service/ShipmentService.java`**
 
 ```java
 public interface ShipmentService {
@@ -459,20 +459,20 @@ public interface ShipmentService {
     List<ShipmentResponse> getAllShipments();
     List<ShipmentResponse> getShipmentsByCustomerId(Long customerId);
     ShipmentResponse updateShipmentStatus(Long id, ShipmentStatusUpdateRequest request);
-    // Only shipment-related methods
+    // Само методи, свързани с пратки
 }
 ```
 
-#### What to Say
+#### Какво да кажете
 
-> "Each service interface contains only methods related to its domain. PricingService has pricing methods. ShipmentService has shipment methods. There's no 'GodService' with 50 unrelated methods.
+> "Всеки service интерфейс съдържа само методи, свързани със своя домейн. PricingService има методи за ценообразуване. ShipmentService има методи за пратки. Няма 'GodService' с 50 несвързани метода.
 >
-> This means when a controller needs pricing, it only depends on PricingService - it's not forced to know about shipments, customers, or anything else. This is Interface Segregation in action."
+> Това означава, че когато контролер има нужда от ценообразуване, той зависи само от PricingService - не е принуден да знае за пратки, клиенти или нещо друго. Това е Разделяне на интерфейса в действие."
 
-#### Contrast with Anti-Pattern
+#### Контраст с анти-шаблон
 
 ```java
-// BAD - Fat Interface (ISP violation)
+// ЛОШО - Дебел интерфейс (ISP нарушение)
 public interface LogisticsService {
     void calculatePrice();
     void registerShipment();
@@ -480,44 +480,44 @@ public interface LogisticsService {
     void createEmployee();
     void generateReport();
     void sendEmail();
-    // 50 more unrelated methods...
+    // 50+ още несвързани метода...
 }
 
-// GOOD - Segregated Interfaces (what I implemented)
-public interface PricingService { /* pricing methods */ }
-public interface ShipmentService { /* shipment methods */ }
-public interface CustomerService { /* customer methods */ }
-public interface ReportService { /* report methods */ }
+// ДОБРЕ - Разделени интерфейси (това, което имплементирах)
+public interface PricingService { /* методи за ценообразуване */ }
+public interface ShipmentService { /* методи за пратки */ }
+public interface CustomerService { /* методи за клиенти */ }
+public interface ReportService { /* методи за справки */ }
 ```
 
 ---
 
-### E. Dependency Inversion Principle (DIP)
+### Д. Принцип на обръщане на зависимостите (DIP)
 
-**Definition:** High-level modules should not depend on low-level modules. Both should depend on abstractions.
+**Дефиниция:** Модулите от високо ниво не трябва да зависят от модули от ниско ниво. И двете трябва да зависят от абстракции.
 
-#### Code Example: ShipmentServiceImpl
+#### Примерен код: ShipmentServiceImpl
 
-**File: `service/impl/ShipmentServiceImpl.java` (lines 55-79)**
+**Файл: `service/impl/ShipmentServiceImpl.java` (редове 55-79)**
 
 ```java
 @Service
 @Transactional
 public class ShipmentServiceImpl implements ShipmentService {
 
-    private final ShipmentRepository shipmentRepository;  // Interface
-    private final CustomerRepository customerRepository;   // Interface
-    private final EmployeeRepository employeeRepository;   // Interface
-    private final OfficeRepository officeRepository;       // Interface
+    private final ShipmentRepository shipmentRepository;  // Интерфейс
+    private final CustomerRepository customerRepository;   // Интерфейс
+    private final EmployeeRepository employeeRepository;   // Интерфейс
+    private final OfficeRepository officeRepository;       // Интерфейс
 
     /**
-     * PricingService injected via constructor.
-     * This is Dependency Inversion (DIP) in action:
-     * - We depend on the PricingService INTERFACE
-     * - We don't know or care about the implementation
-     * - This allows swapping pricing strategies easily
+     * PricingService инжектиран чрез конструктор.
+     * Това е Обръщане на зависимостите (DIP) в действие:
+     * - Зависим от ИНТЕРФЕЙСА PricingService
+     * - Не знаем и не се интересуваме от имплементацията
+     * - Това позволява лесна смяна на стратегии за ценообразуване
      */
-    private final PricingService pricingService;  // Interface, NOT PricingServiceImpl!
+    private final PricingService pricingService;  // Интерфейс, НЕ PricingServiceImpl!
 
     public ShipmentServiceImpl(ShipmentRepository shipmentRepository,
                                CustomerRepository customerRepository,
@@ -528,91 +528,91 @@ public class ShipmentServiceImpl implements ShipmentService {
         this.customerRepository = customerRepository;
         this.employeeRepository = employeeRepository;
         this.officeRepository = officeRepository;
-        this.pricingService = pricingService;  // Spring injects the actual implementation
+        this.pricingService = pricingService;  // Spring инжектира реалната имплементация
     }
 ```
 
-#### What to Say
+#### Какво да кажете
 
-> "ShipmentServiceImpl depends on **PricingService** the interface, not PricingServiceImpl the concrete class. Spring resolves which implementation to inject at runtime.
+> "ShipmentServiceImpl зависи от **PricingService** интерфейса, не от PricingServiceImpl конкретния клас. Spring решава коя имплементация да инжектира по време на изпълнение.
 >
-> This means:
-> 1. I can swap pricing implementations without changing ShipmentServiceImpl
-> 2. In tests, I can mock PricingService without needing a real database
-> 3. The high-level business logic (shipment registration) doesn't depend on low-level details (how pricing is calculated)"
+> Това означава:
+> 1. Мога да сменя имплементации за ценообразуване без да променям ShipmentServiceImpl
+> 2. В тестове мога да мокна PricingService без да имам нужда от реална база данни
+> 3. Бизнес логиката от високо ниво (регистрация на пратки) не зависи от детайли от ниско ниво (как се изчислява ценообразуването)"
 
-#### Dependency Flow Diagram
+#### Диаграма на потока на зависимости
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    HIGH-LEVEL MODULE                         │
+│                    МОДУЛ ОТ ВИСОКО НИВО                      │
 │                  ShipmentController                          │
-│           (depends on ShipmentService interface)             │
+│           (зависи от интерфейса ShipmentService)             │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                      ABSTRACTION                             │
-│                  ShipmentService (interface)                 │
+│                      АБСТРАКЦИЯ                              │
+│                  ShipmentService (интерфейс)                 │
 └─────────────────────────────────────────────────────────────┘
                               ↑
 ┌─────────────────────────────────────────────────────────────┐
-│                    LOW-LEVEL MODULE                          │
+│                    МОДУЛ ОТ НИСКО НИВО                        │
 │                  ShipmentServiceImpl                         │
-│           (implements ShipmentService interface)             │
+│           (имплементира интерфейса ShipmentService)          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### Professor Might Ask
+#### Преподавателят може да попита
 
-**Q: "What if you inject the concrete class directly?"**
+**В: "Какво ако инжектирате конкретния клас директно?"**
 
-**A:** "If I injected `ShipmentServiceImpl` directly instead of the `ShipmentService` interface:
-1. **Testing becomes harder** - I can't easily mock the concrete class
-2. **Coupling increases** - The controller now depends on implementation details
-3. **Flexibility decreases** - I can't swap implementations without code changes
-4. **Violates DIP** - High-level module depends on low-level module"
+**О:** "Ако инжектирах `ShipmentServiceImpl` директно вместо интерфейса `ShipmentService`:
+1. **Тестването става по-трудно** - Не мога лесно да мокна конкретния клас
+2. **Свързаността се увеличава** - Контролерът сега зависи от детайли на имплементацията
+3. **Гъвкавостта намалява** - Не мога да сменям имплементации без промени в кода
+4. **Нарушава DIP** - Модул от високо ниво зависи от модул от ниско ниво"
 
 ---
 
-## SECTION 4: Database Design
+## СЕКЦИЯ 4: Дизайн на базата данни
 
-**Duration: 5 minutes**
+**Продължителност: 5 минути**
 
-### Entity Relationship Diagram
+### Диаграма на връзки между обектите
 
 ```
 ┌──────────────┐         ┌─────────────────┐
 │    users     │         │   customers     │
-│   (auth)     │1───────1│  (phone, addr)  │
+│   (авт.)     │1───────1│  (тел., адрес)  │
 └──────────────┘         └─────────────────┘
        │1                        │1
        │                         │
        │1        ┌──────────────┐│
        └────────→│  employees   ││
-                 │ (salary,type)││
+                 │ (запл.,тип)  ││
                  └──────────────┘│
                        │M        │M
                        │         │
                 ┌──────▼─────┐   │
                 │  companies │   │
-                │ (reg_num)  │   │
+                │ (рег_ном)  │   │
                 └──────┬─────┘   │
                        │1        │
                        │M        │
                 ┌──────▼──────┐  │         ┌─────────────────┐
                 │   offices   │  └────────→│    shipments    │
-                │  (address)  │←───────────│ (weight, price) │
+                │  (адрес)    │←───────────│ (тегло, цена)   │
                 └─────────────┘            └─────────────────┘
                                                    │
                                            ┌───────▼───────┐
                                            │ pricing_config│
-                                           │(base, per_kg) │
+                                           │(база, на_кг)  │
                                            └───────────────┘
 ```
 
-### Schema Highlights
+### Акценти върху схемата
 
-**File: `resources/schema.sql` (lines 110-136)**
+**Файл: `resources/schema.sql` (редове 110-136)**
 
 ```sql
 CREATE TABLE IF NOT EXISTS shipments (
@@ -623,8 +623,8 @@ CREATE TABLE IF NOT EXISTS shipments (
     origin_office_id BIGINT,
     delivery_address VARCHAR(255),
     delivery_office_id BIGINT,
-    weight DECIMAL(10,2) NOT NULL,      -- BigDecimal in Java
-    price DECIMAL(10,2) NOT NULL,       -- BigDecimal in Java
+    weight DECIMAL(10,2) NOT NULL,      -- BigDecimal в Java
+    price DECIMAL(10,2) NOT NULL,       -- BigDecimal в Java
     status VARCHAR(20) NOT NULL,
     registered_at DATETIME NOT NULL,
     delivered_at DATETIME,
@@ -638,89 +638,89 @@ CREATE TABLE IF NOT EXISTS shipments (
 );
 ```
 
-### What to Say
+### Какво да кажете
 
-> "All monetary values use `DECIMAL(10,2)`, never `FLOAT` or `DOUBLE`. This prevents precision errors in financial calculations. In Java, these map to `BigDecimal`.
+> "Всички парични стойности използват `DECIMAL(10,2)`, никога `FLOAT` или `DOUBLE`. Това предотвратява грешки в точността при финансови изчисления. В Java те се съпоставят на `BigDecimal`.
 >
-> The pricing configuration is stored in the database, so it can be changed without redeploying the application. Only one pricing config row should be active at a time.
+> Конфигурацията за ценообразуване се съхранява в базата данни, така че може да се променя без повторно разгръщане на приложението. Само един ред конфигурация за ценообразуване трябва да е активен едновременно.
 >
-> Foreign keys enforce referential integrity - you can't create a shipment for a non-existent customer."
+> Външните ключове налагат референтна цялост - не можете да създадете пратка за несъществуващ клиент."
 
-### Live Demo Suggestion
+### Предложение за демонстрация на живо
 
-1. Open MySQL Workbench or command line
-2. Show `pricing_config` table with current values
-3. Update a pricing value
-4. Create a new shipment
-5. Show the new price was applied
+1. Отворете MySQL Workbench или командния ред
+2. Покажете таблицата `pricing_config` с текущите стойности
+3. Актуализирайте стойност за ценообразуване
+4. Създайте нова пратка
+5. Покажете, че новата цена е приложена
 
 ---
 
-## SECTION 5: Security Implementation
+## СЕКЦИЯ 5: Имплементация на сигурност
 
-**Duration: 5 minutes**
+**Продължителност: 5 минути**
 
-### Authentication Flow Diagram
+### Диаграма на потока на автентикация
 
 ```
 ┌─────────┐                                    ┌──────────────┐
-│  Client │                                    │   Server     │
+│  Клиент │                                    │   Сървър     │
 └────┬────┘                                    └──────┬───────┘
      │                                                │
      │  1. POST /api/auth/login                       │
      │     {username, password}                       │
      │───────────────────────────────────────────────>│
      │                                                │
-     │                        2. Validate credentials │
-     │                        3. Generate JWT token   │
+     │                        2. Валидиране на данни  │
+     │                        3. Генериране на JWT    │
      │                                                │
-     │  4. Response: {token: "eyJhbG...", role: ...}  │
+     │  4. Отговор: {token: "eyJhbG...", role: ...}   │
      │<───────────────────────────────────────────────│
      │                                                │
      │  5. GET /api/shipments                         │
      │     Authorization: Bearer eyJhbG...            │
      │───────────────────────────────────────────────>│
      │                                                │
-     │                        6. Validate JWT token   │
-     │                        7. Extract username/role│
-     │                        8. Check @PreAuthorize  │
+     │                        6. Валидиране на JWT    │
+     │                        7. Извличане на user/role│
+     │                        8. Проверка @PreAuthorize│
      │                                                │
-     │  9. Response: [shipment data]                  │
+     │  9. Отговор: [данни за пратки]                 │
      │<───────────────────────────────────────────────│
 ```
 
-### SecurityConfig Code
+### Код на SecurityConfig
 
-**File: `config/SecurityConfig.java` (lines 67-113)**
+**Файл: `config/SecurityConfig.java` (редове 67-113)**
 
 ```java
 @Bean
 public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-            // Disable CSRF - we're using stateless JWT authentication
+            // Деактивиране на CSRF - използваме stateless JWT автентикация
             .csrf(csrf -> csrf.disable())
 
-            // Set session management to stateless
+            // Задаване на управление на сесии на stateless
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            // Configure authorization rules
+            // Конфигуриране на правила за оторизация
             .authorizeHttpRequests(auth -> auth
-                    // Static files - public access
+                    // Статични файлове - публичен достъп
                     .requestMatchers("/").permitAll()
                     .requestMatchers("/css/**", "/js/**").permitAll()
 
-                    // Auth endpoints - public access
+                    // Auth крайни точки - публичен достъп
                     .requestMatchers("/api/auth/**").permitAll()
 
-                    // Swagger documentation
+                    // Swagger документация
                     .requestMatchers("/swagger-ui/**", "/api-docs/**").permitAll()
 
-                    // All other endpoints require authentication
+                    // Всички други крайни точки изискват автентикация
                     .anyRequest().authenticated()
             )
 
-            // Add JWT filter before the standard authentication filter
+            // Добавяне на JWT филтър преди стандартния филтър за автентикация
             .addFilterBefore(jwtAuthenticationFilter,
                     UsernamePasswordAuthenticationFilter.class);
 
@@ -730,184 +730,184 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 
 ### JWT Token Provider
 
-**File: `security/JwtTokenProvider.java` (lines 62-77)**
+**Файл: `security/JwtTokenProvider.java` (редове 62-77)**
 
 ```java
 public String generateToken(String username, Role role) {
     Date now = new Date();
-    Date expiryDate = new Date(now.getTime() + expirationMs);  // 24 hours
+    Date expiryDate = new Date(now.getTime() + expirationMs);  // 24 часа
 
     String token = Jwts.builder()
-            .subject(username)           // Who the token is for
-            .claim("role", role.name())  // User's role embedded in token
+            .subject(username)           // За кого е токенът
+            .claim("role", role.name())  // Ролята на потребителя, вградена в токена
             .issuedAt(now)
             .expiration(expiryDate)
-            .signWith(secretKey)         // HMAC-SHA256 signature
+            .signWith(secretKey)         // HMAC-SHA256 подпис
             .compact();
 
     return token;
 }
 ```
 
-### Role-Based Access Control
+### Контрол на достъпа, базиран на роли
 
-**File: `controller/ShipmentController.java`**
+**Файл: `controller/ShipmentController.java`**
 
 ```java
-// Only employees can register shipments
+// Само служители могат да регистрират пратки
 @PostMapping
 @PreAuthorize("hasRole('EMPLOYEE')")
 public ResponseEntity<ShipmentResponse> registerShipment(...) { }
 
-// Only employees can update shipment status
+// Само служители могат да актуализират статуса на пратка
 @PatchMapping("/{id}/status")
 @PreAuthorize("hasRole('EMPLOYEE')")
 public ResponseEntity<ShipmentResponse> updateShipmentStatus(...) { }
 ```
 
-### What to Say
+### Какво да кажете
 
-> "I use JWT for stateless authentication. This means the server doesn't store session data - all information needed to validate a request is in the token itself.
+> "Използвам JWT за stateless автентикация. Това означава, че сървърът не съхранява данни за сесии - цялата информация, необходима за валидиране на заявка, е в самия токен.
 >
-> The flow is:
-> 1. User logs in with username/password
-> 2. Server validates credentials and generates a JWT containing username and role
-> 3. Client stores the token and sends it in the Authorization header for subsequent requests
-> 4. Server validates the token signature and expiration on each request
-> 5. Spring Security's `@PreAuthorize` annotation checks if the user has the required role"
+> Потокът е:
+> 1. Потребителят влиза с потребителско име/парола
+> 2. Сървърът валидира данните и генерира JWT, съдържащ потребителското име и роля
+> 3. Клиентът съхранява токена и го изпраща в Authorization хедъра за последващи заявки
+> 4. Сървърът валидира подписа и изтичането на токена при всяка заявка
+> 5. Анотацията `@PreAuthorize` на Spring Security проверява дали потребителят има необходимата роля"
 
 ---
 
-## SECTION 6: Pricing System
+## СЕКЦИЯ 6: Система за ценообразуване
 
-**Duration: 5 minutes**
+**Продължителност: 5 минути**
 
-### Pricing Formula
-
-```
-Total Price = Base Price + (Weight × Price per Kg) + Delivery Fee
-
-Where:
-├── Base Price:       Fixed cost per shipment (default: $5.00)
-├── Price per Kg:     Cost per kilogram (default: $2.00/kg)
-└── Delivery Fee:
-    ├── Office delivery:  $0.00 (free)
-    └── Address delivery: $10.00 (extra fee)
-```
-
-### Example Calculations
+### Формула за ценообразуване
 
 ```
-Example 1: 5kg package to office
-  Total = $5.00 + (5 × $2.00) + $0.00 = $15.00
+Обща цена = Базова цена + (Тегло × Цена на кг) + Такса за доставка
 
-Example 2: 5kg package to address
-  Total = $5.00 + (5 × $2.00) + $10.00 = $25.00
-
-Example 3: 2.75kg package to office
-  Total = $5.00 + (2.75 × $2.00) + $0.00 = $10.50
+Където:
+├── Базова цена:       Фиксиран разход за пратка (по подразбиране: $5.00)
+├── Цена на кг:        Разход на килограм (по подразбиране: $2.00/кг)
+└── Такса за доставка:
+    ├── Доставка до офис:  $0.00 (безплатно)
+    └── Доставка до адрес: $10.00 (допълнителна такса)
 ```
 
-### Code Implementation
+### Примерни изчисления
 
-**File: `service/impl/PricingServiceImpl.java` (lines 64-88)**
+```
+Пример 1: 5кг пакет до офис
+  Общо = $5.00 + (5 × $2.00) + $0.00 = $15.00
+
+Пример 2: 5кг пакет до адрес
+  Общо = $5.00 + (5 × $2.00) + $10.00 = $25.00
+
+Пример 3: 2.75кг пакет до офис
+  Общо = $5.00 + (2.75 × $2.00) + $0.00 = $10.50
+```
+
+### Имплементация на кода
+
+**Файл: `service/impl/PricingServiceImpl.java` (редове 64-88)**
 
 ```java
 @Override
 @Transactional(readOnly = true)
 public BigDecimal calculatePrice(BigDecimal weight, boolean isOfficeDelivery) {
-    PricingConfig config = getActiveConfig();  // From database
+    PricingConfig config = getActiveConfig();  // От базата данни
 
-    // Step 1: Start with base price
+    // Стъпка 1: Започваме с базовата цена
     BigDecimal total = config.getBasePrice();
 
-    // Step 2: Add weight-based cost (weight × price per kg)
+    // Стъпка 2: Добавяме разход, базиран на теглото (тегло × цена на кг)
     BigDecimal weightCost = weight.multiply(config.getPricePerKg());
     total = total.add(weightCost);
 
-    // Step 3: Add delivery type fee (0 for office, addressDeliveryFee for address)
+    // Стъпка 3: Добавяме такса за тип доставка (0 за офис, addressDeliveryFee за адрес)
     if (!isOfficeDelivery) {
         total = total.add(config.getAddressDeliveryFee());
     }
 
-    // Round to 2 decimal places for currency
+    // Закръгляме до 2 десетични знака за валута
     total = total.setScale(2, RoundingMode.HALF_UP);
 
     return total;
 }
 ```
 
-### What to Say
+### Какво да кажете
 
-> "Pricing is calculated **server-side only**. The frontend never calculates prices because:
-> 1. Prices could be manipulated by users
-> 2. The server is the source of truth
+> "Ценообразуването се изчислява **само от страна на сървъра**. Фронтендът никога не изчислява цени, защото:
+> 1. Цените биха могли да бъдат манипулирани от потребители
+> 2. Сървърът е източникът на истината
 >
-> I use `BigDecimal` for all monetary calculations because `double` can have precision errors. For example, `0.1 + 0.2` in floating-point equals `0.30000000000000004`, not `0.3`.
+> Използвам `BigDecimal` за всички парични изчисления, защото `double` може да има грешки в точността. Например, `0.1 + 0.2` при числа с плаваща запетая е равно на `0.30000000000000004`, не на `0.3`.
 >
-> Configuration comes from the database, so prices can be changed without code modifications. This follows the Open/Closed Principle."
+> Конфигурацията идва от базата данни, така че цените могат да се променят без модификации на кода. Това следва Принципа отворен/затворен."
 
-### Live Demo
+### Демонстрация на живо
 
-1. Show current `pricing_config` in database
-2. Register a shipment, note the price
-3. Update pricing in database (e.g., increase base price)
-4. Register another shipment, show new price applied
+1. Покажете текущата `pricing_config` в базата данни
+2. Регистрирайте пратка, отбележете цената
+3. Актуализирайте ценообразуването в базата данни (напр. увеличете базовата цена)
+4. Регистрирайте друга пратка, покажете, че новата цена е приложена
 
 ---
 
-## SECTION 7: Validation Strategy
+## СЕКЦИЯ 7: Стратегия за валидация
 
-**Duration: 4 minutes**
+**Продължителност: 4 минути**
 
-### Multi-Layer Validation
+### Многослойна валидация
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Layer 1: FRONTEND (Immediate User Feedback)                │
+│  Слой 1: ФРОНТЕНД (Незабавна обратна връзка към потребителя)│
 │  validation.js - validateShipmentForm()                     │
-│  "Weight must be greater than 0"                            │
+│  "Теглото трябва да е по-голямо от 0"                       │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  Layer 2: DTO (@Valid Annotations)                          │
+│  Слой 2: DTO (анотации @Valid)                              │
 │  ShipmentRequest.java - @NotNull, @DecimalMin, @DecimalMax  │
-│  Automatic HTTP 400 if validation fails                     │
+│  Автоматичен HTTP 400 ако валидацията не мине               │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  Layer 3: SERVICE (Business Rules)                          │
+│  Слой 3: SERVICE (Бизнес правила)                           │
 │  ShipmentServiceImpl - validateDeliveryDestination()        │
-│  "Cannot specify both address and office"                   │
+│  "Не може да се зададе едновременно адрес и офис"           │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  Layer 4: EXCEPTION HANDLER (Consistent Responses)          │
-│  GlobalExceptionHandler - formats all errors                │
-│  Returns structured JSON error response                     │
+│  Слой 4: EXCEPTION HANDLER (Последователни отговори)        │
+│  GlobalExceptionHandler - форматира всички грешки           │
+│  Връща структуриран JSON отговор за грешка                  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Layer 1: Frontend Validation
+### Слой 1: Фронтенд валидация
 
-**File: `resources/static/js/validation.js` (lines 202-242)**
+**Файл: `resources/static/js/validation.js` (редове 202-242)**
 
 ```javascript
 export function validateShipmentForm(data) {
     const errors = [];
 
-    // Sender validation
+    // Валидация на подател
     if (!data.senderId) {
-        errors.push('Please select a sender.');
+        errors.push('Моля, изберете подател.');
     }
 
-    // Weight validation - must be between 0.01 and 10000 kg
+    // Валидация на тегло - трябва да е между 0.01 и 10000 кг
     if (!data.weight || data.weight <= 0) {
-        errors.push('Weight must be greater than 0.');
+        errors.push('Теглото трябва да е по-голямо от 0.');
     } else if (data.weight < 0.01) {
-        errors.push('Weight must be at least 0.01 kg.');
+        errors.push('Теглото трябва да е поне 0.01 кг.');
     } else if (data.weight > 10000) {
-        errors.push('Weight cannot exceed 10000 kg.');
+        errors.push('Теглото не може да надвишава 10000 кг.');
     }
 
     return {
@@ -917,32 +917,32 @@ export function validateShipmentForm(data) {
 }
 ```
 
-### Layer 2: DTO Validation
+### Слой 2: DTO валидация
 
-**File: `dto/shipment/ShipmentRequest.java` (lines 24-59)**
+**Файл: `dto/shipment/ShipmentRequest.java` (редове 24-59)**
 
 ```java
 public class ShipmentRequest {
 
-    @NotNull(message = "Sender ID is required")
+    @NotNull(message = "ID на подател е задължително")
     private Long senderId;
 
-    @NotNull(message = "Recipient ID is required")
+    @NotNull(message = "ID на получател е задължително")
     private Long recipientId;
 
-    @Size(max = 255, message = "Delivery address must not exceed 255 characters")
+    @Size(max = 255, message = "Адресът за доставка не трябва да надвишава 255 символа")
     private String deliveryAddress;
 
-    @NotNull(message = "Weight is required")
-    @DecimalMin(value = "0.01", message = "Weight must be at least 0.01 kg")
-    @DecimalMax(value = "10000.00", message = "Weight cannot exceed 10000 kg")
+    @NotNull(message = "Теглото е задължително")
+    @DecimalMin(value = "0.01", message = "Теглото трябва да е поне 0.01 кг")
+    @DecimalMax(value = "10000.00", message = "Теглото не може да надвишава 10000 кг")
     private BigDecimal weight;
 }
 ```
 
-### Layer 3: Service Validation
+### Слой 3: Service валидация
 
-**File: `service/impl/ShipmentServiceImpl.java` (lines 282-300)**
+**Файл: `service/impl/ShipmentServiceImpl.java` (редове 282-300)**
 
 ```java
 private void validateDeliveryDestination(ShipmentRequest request) {
@@ -951,26 +951,26 @@ private void validateDeliveryDestination(ShipmentRequest request) {
 
     if (!hasAddress && !hasOffice) {
         throw new InvalidDataException(
-            "Either deliveryAddress or deliveryOfficeId must be provided");
+            "Трябва да се предостави или deliveryAddress, или deliveryOfficeId");
     }
 
     if (hasAddress && hasOffice) {
         throw new InvalidDataException(
-            "Cannot specify both deliveryAddress and deliveryOfficeId");
+            "Не може да се зададе едновременно deliveryAddress и deliveryOfficeId");
     }
 }
 ```
 
-### Layer 4: Global Exception Handler
+### Слой 4: Глобален Exception Handler
 
-**File: `exception/GlobalExceptionHandler.java` (lines 148-169)**
+**Файл: `exception/GlobalExceptionHandler.java` (редове 148-169)**
 
 ```java
 @ExceptionHandler(MethodArgumentNotValidException.class)
 public ResponseEntity<ErrorResponse> handleValidationException(
         MethodArgumentNotValidException ex, HttpServletRequest request) {
 
-    // Collect all field validation errors
+    // Събиране на всички грешки от валидация на полета
     Map<String, String> validationErrors = new HashMap<>();
     for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
         validationErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
@@ -978,8 +978,8 @@ public ResponseEntity<ErrorResponse> handleValidationException(
 
     ErrorResponse errorResponse = new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
-            "Validation Failed",
-            "One or more fields have validation errors",
+            "Валидацията се провали",
+            "Едно или повече полета имат грешки при валидация",
             request.getRequestURI()
     );
     errorResponse.setValidationErrors(validationErrors);
@@ -988,42 +988,42 @@ public ResponseEntity<ErrorResponse> handleValidationException(
 }
 ```
 
-### What to Say
+### Какво да кажете
 
-> "I validate at **multiple layers** for defense in depth:
+> "Валидирам на **множество слоеве** за защита в дълбочина:
 >
-> 1. **Frontend validation** gives immediate user feedback without a server round-trip
-> 2. **DTO validation** catches any requests that bypass the frontend (e.g., API tools like Postman)
-> 3. **Service validation** enforces business rules like 'either address OR office, not both'
-> 4. **Exception handler** ensures all errors return a consistent JSON format
+> 1. **Фронтенд валидация** дава незабавна обратна връзка към потребителя без заявка до сървъра
+> 2. **DTO валидация** улавя заявки, които заобикалят фронтенда (напр. API инструменти като Postman)
+> 3. **Service валидация** налага бизнес правила като 'или адрес ИЛИ офис, не и двете'
+> 4. **Exception handler** осигурява, че всички грешки връщат последователен JSON формат
 >
-> Even if a malicious user bypasses frontend validation, the backend still validates everything. This is a security best practice."
+> Дори ако злонамерен потребител заобиколи фронтенд валидацията, бекендът все още валидира всичко. Това е най-добра практика за сигурност."
 
 ---
 
-## SECTION 8: Access Control Logic
+## СЕКЦИЯ 8: Логика за контрол на достъпа
 
-**Duration: 3 minutes**
+**Продължителност: 3 минути**
 
-### Role-Based Data Filtering
+### Филтриране на данни, базирано на роли
 
-**File: `controller/ShipmentController.java` (lines 102-119)**
+**Файл: `controller/ShipmentController.java` (редове 102-119)**
 
 ```java
 @GetMapping
-@Operation(summary = "Get all shipments",
-           description = "Employees see all. Customers see only their own.")
+@Operation(summary = "Получаване на всички пратки",
+           description = "Служителите виждат всички. Клиентите виждат само собствените си.")
 public ResponseEntity<List<ShipmentResponse>> getAllShipments(
         Authentication authentication) {
 
     List<ShipmentResponse> shipments;
 
     if (isCustomer(authentication)) {
-        // Customer: only their shipments (as sender OR recipient)
+        // Клиент: само техните пратки (като подател ИЛИ получател)
         Long customerId = getCustomerIdFromAuth(authentication);
         shipments = shipmentService.getShipmentsByCustomerId(customerId);
     } else {
-        // Employee: all shipments
+        // Служител: всички пратки
         shipments = shipmentService.getAllShipments();
     }
 
@@ -1031,20 +1031,20 @@ public ResponseEntity<List<ShipmentResponse>> getAllShipments(
 }
 ```
 
-### Service Layer Filtering
+### Филтриране в Service слоя
 
-**File: `service/impl/ShipmentServiceImpl.java` (lines 166-180)**
+**Файл: `service/impl/ShipmentServiceImpl.java` (редове 166-180)**
 
 ```java
 @Override
 @Transactional(readOnly = true)
 public List<ShipmentResponse> getShipmentsByCustomerId(Long customerId) {
-    // Validate customer exists
+    // Валидиране, че клиентът съществува
     if (!customerRepository.existsById(customerId)) {
         throw new ResourceNotFoundException("Customer", "id", customerId);
     }
 
-    // Return shipments where customer is sender OR recipient
+    // Връщане на пратки, където клиентът е подател ИЛИ получател
     return shipmentRepository.findBySenderIdOrRecipientId(customerId, customerId)
             .stream()
             .map(EntityMapper::toShipmentResponse)
@@ -1052,9 +1052,9 @@ public List<ShipmentResponse> getShipmentsByCustomerId(Long customerId) {
 }
 ```
 
-### Access Denied for Unauthorized Access
+### Отказ на достъп за неоторизиран достъп
 
-**File: `controller/ShipmentController.java` (lines 77-95)**
+**Файл: `controller/ShipmentController.java` (редове 77-95)**
 
 ```java
 @GetMapping("/{id}")
@@ -1064,13 +1064,13 @@ public ResponseEntity<ShipmentResponse> getShipmentById(
 
     ShipmentResponse shipment = shipmentService.getShipmentById(id);
 
-    // If customer, verify they have access to this shipment
+    // Ако е клиент, проверяваме дали има достъп до тази пратка
     if (isCustomer(authentication)) {
         Long customerId = getCustomerIdFromAuth(authentication);
         if (!shipment.getSenderId().equals(customerId) &&
                 !shipment.getRecipientId().equals(customerId)) {
             throw new UnauthorizedException(
-                "You can only view shipments where you are sender or recipient");
+                "Можете да преглеждате само пратки, където сте подател или получател");
         }
     }
 
@@ -1078,74 +1078,74 @@ public ResponseEntity<ShipmentResponse> getShipmentById(
 }
 ```
 
-### What to Say
+### Какво да кажете
 
-> "Access control happens at **multiple levels**:
+> "Контролът на достъпа се случва на **множество нива**:
 >
-> 1. `@PreAuthorize("hasRole('EMPLOYEE')")` blocks customers from employee-only endpoints entirely
-> 2. For shared endpoints like viewing shipments, the **controller checks the role** and **services filter data**
-> 3. A customer can only see shipments where they are the sender OR recipient
-> 4. Employees bypass these filters and see everything
+> 1. `@PreAuthorize("hasRole('EMPLOYEE')")` напълно блокира клиентите от крайни точки само за служители
+> 2. За споделени крайни точки като преглед на пратки, **контролерът проверява ролята** и **услугите филтрират данните**
+> 3. Клиент може да види само пратки, където е подател ИЛИ получател
+> 4. Служителите заобикалят тези филтри и виждат всичко
 >
-> This ensures data isolation - customers never accidentally see other customers' shipments."
+> Това осигурява изолация на данните - клиентите никога случайно не виждат пратки на други клиенти."
 
-### Live Demo
+### Демонстрация на живо
 
-1. Login as a customer
-2. View shipments - only see own shipments
-3. Try to access another shipment by ID - get 403 Forbidden
-4. Login as employee - see all shipments
+1. Влезте като клиент
+2. Прегледайте пратките - виждате само собствените си пратки
+3. Опитайте да достъпите друга пратка по ID - получавате 403 Forbidden
+4. Влезте като служител - виждате всички пратки
 
 ---
 
-## SECTION 9: Report Generation
+## СЕКЦИЯ 9: Генериране на справки
 
-**Duration: 3 minutes**
+**Продължителност: 3 минути**
 
-### Available Reports (8 Total)
+### Налични справки (общо 8)
 
-| Report | Endpoint | Access |
-|--------|----------|--------|
-| All Employees | GET /api/reports/employees | Employee only |
-| All Customers | GET /api/reports/customers | Employee only |
-| All Shipments | GET /api/reports/shipments | Employee: all, Customer: own |
-| By Employee | GET /api/reports/shipments/employee/{id} | Employee only |
-| Pending Shipments | GET /api/reports/shipments/pending | Employee only |
-| Sent by Customer | GET /api/reports/shipments/customer/{id}/sent | Own data |
-| Received by Customer | GET /api/reports/shipments/customer/{id}/received | Own data |
-| Revenue | GET /api/reports/revenue?startDate=...&endDate=... | Employee only |
+| Справка | Крайна точка | Достъп |
+|---------|--------------|--------|
+| Всички служители | GET /api/reports/employees | Само служител |
+| Всички клиенти | GET /api/reports/customers | Само служител |
+| Всички пратки | GET /api/reports/shipments | Служител: всички, Клиент: собствени |
+| По служител | GET /api/reports/shipments/employee/{id} | Само служител |
+| Чакащи пратки | GET /api/reports/shipments/pending | Само служител |
+| Изпратени от клиент | GET /api/reports/shipments/customer/{id}/sent | Собствени данни |
+| Получени от клиент | GET /api/reports/shipments/customer/{id}/received | Собствени данни |
+| Приходи | GET /api/reports/revenue?startDate=...&endDate=... | Само служител |
 
-### Revenue Report Implementation
+### Имплементация на справка за приходи
 
-**File: `service/impl/ReportServiceImpl.java` (lines 137-171)**
+**Файл: `service/impl/ReportServiceImpl.java` (редове 137-171)**
 
 ```java
 /**
- * IMPORTANT: Only counts DELIVERED shipments as revenue.
- * Cancelled or pending shipments do NOT count as revenue because:
- * - Cancelled: No payment was completed
- * - Pending: Payment hasn't been confirmed/completed
+ * ВАЖНО: Отчита само ДОСТАВЕНИ пратки като приход.
+ * Отменени или чакащи пратки НЕ се отчитат като приход, защото:
+ * - Отменени: Плащането не е завършено
+ * - Чакащи: Плащането не е потвърдено/завършено
  *
- * Revenue = SUM(price) for all DELIVERED shipments in the date range.
+ * Приход = СУМА(цена) за всички ДОСТАВЕНИ пратки в периода.
  */
 @Override
 public RevenueResponse getRevenueReport(LocalDate startDate, LocalDate endDate) {
-    logger.info("Generating revenue report from {} to {}", startDate, endDate);
+    logger.info("Генериране на справка за приходи от {} до {}", startDate, endDate);
 
-    // Convert LocalDate to LocalDateTime for query
+    // Конвертиране на LocalDate към LocalDateTime за заявката
     LocalDateTime startDateTime = startDate.atStartOfDay();
     LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
-    // Calculate total revenue (sum of prices for DELIVERED shipments only)
+    // Изчисляване на общ приход (сума от цени само за ДОСТАВЕНИ пратки)
     BigDecimal totalRevenue = shipmentRepository
         .calculateRevenueBetweenDates(startDateTime, endDateTime);
 
-    // If no delivered shipments, revenue is 0
+    // Ако няма доставени пратки, приходът е 0
     if (totalRevenue == null) {
         totalRevenue = BigDecimal.ZERO;
     }
 
-    // Count delivered shipments in the period
+    // Броене на доставени пратки в периода
     long deliveredCount = shipmentRepository
         .findDeliveredShipmentsBetweenDates(startDateTime, endDateTime).size();
 
@@ -1153,33 +1153,33 @@ public RevenueResponse getRevenueReport(LocalDate startDate, LocalDate endDate) 
 }
 ```
 
-### What to Say
+### Какво да кажете
 
-> "The revenue report only counts **DELIVERED** shipments. Cancelled or pending shipments don't count because payment hasn't been completed.
+> "Справката за приходи отчита само **ДОСТАВЕНИ** пратки. Отменени или чакащи пратки не се отчитат, защото плащането не е завършено.
 >
-> The report filters by **delivery date**, not registration date. This gives an accurate picture of when revenue was actually earned.
+> Справката филтрира по **дата на доставка**, не по дата на регистрация. Това дава точна картина кога приходът действително е спечелен.
 >
-> I use `BigDecimal.add()` for summing prices to maintain precision - never `double` for financial calculations."
+> Използвам `BigDecimal.add()` за сумиране на цени, за да поддържам точност - никога `double` за финансови изчисления."
 
 ---
 
-## SECTION 10: Testing Approach
+## СЕКЦИЯ 10: Подход към тестването
 
-**Duration: 3 minutes**
+**Продължителност: 3 минути**
 
-### Test Structure
+### Структура на тестовете
 
 ```
 src/test/java/com/logistics/
-├── controller/     # Integration tests (8 test classes)
-├── service/        # Unit tests (6 test classes)
-├── repository/     # Repository tests
-└── security/       # Security tests
+├── controller/     # Интеграционни тестове (8 тестови класа)
+├── service/        # Unit тестове (6 тестови класа)
+├── repository/     # Repository тестове
+└── security/       # Security тестове
 ```
 
-### Unit Test Example
+### Пример за unit тест
 
-**File: `service/PricingServiceTest.java` (lines 47-65)**
+**Файл: `service/PricingServiceTest.java` (редове 47-65)**
 
 ```java
 @ExtendWith(MockitoExtension.class)
@@ -1192,187 +1192,187 @@ class PricingServiceTest {
     private PricingServiceImpl pricingService;
 
     @Test
-    @DisplayName("Should calculate correct price for office delivery")
+    @DisplayName("Трябва да изчисли правилна цена за доставка до офис")
     void calculatePrice_OfficeDelivery_ReturnsCorrectPrice() {
-        // Arrange
+        // Подготовка
         when(pricingConfigRepository.findByActiveTrue())
             .thenReturn(Optional.of(defaultConfig));
         BigDecimal weight = new BigDecimal("5.00");
 
-        // Act
-        // Formula: 5.00 + (5.00 × 2.00) + 0.00 = 15.00
+        // Действие
+        // Формула: 5.00 + (5.00 × 2.00) + 0.00 = 15.00
         BigDecimal price = pricingService.calculatePrice(weight, true);
 
-        // Assert
+        // Проверка
         assertEquals(new BigDecimal("15.00"), price);
         verify(pricingConfigRepository).findByActiveTrue();
     }
 }
 ```
 
-### What to Say
+### Какво да кажете
 
-> "I use **Mockito** to mock dependencies, which allows testing business logic in isolation. The `@Mock` annotation creates a mock of the repository, and `@InjectMocks` injects it into the service.
+> "Използвам **Mockito** за мокване на зависимости, което позволява тестване на бизнес логика в изолация. Анотацията `@Mock` създава мок на хранилището, а `@InjectMocks` го инжектира в услугата.
 >
-> The test follows the **Arrange-Act-Assert** pattern:
-> 1. **Arrange**: Set up test data and mock behavior
-> 2. **Act**: Call the method being tested
-> 3. **Assert**: Verify the result and mock interactions
+> Тестът следва шаблона **Arrange-Act-Assert**:
+> 1. **Arrange (Подготовка)**: Настройване на тестови данни и поведение на мокове
+> 2. **Act (Действие)**: Извикване на метода, който се тества
+> 3. **Assert (Проверка)**: Проверка на резултата и взаимодействията с мокове
 >
-> Tests cover edge cases like zero weight, negative values, and missing configuration."
+> Тестовете покриват гранични случаи като нулево тегло, отрицателни стойности и липсваща конфигурация."
 
-### Key Test Cases
+### Ключови тестови случаи
 
-- Pricing calculation for office vs. address delivery
-- Error handling when no pricing config exists
-- Validation of business rules
-- Authentication and authorization flows
+- Изчисляване на ценообразуване за доставка до офис vs. до адрес
+- Обработка на грешки, когато няма конфигурация за ценообразуване
+- Валидация на бизнес правила
+- Потоци на автентикация и оторизация
 
 ---
 
-## SECTION 11: Code Quality Highlights
+## СЕКЦИЯ 11: Акценти върху качеството на кода
 
-**Duration: 2 minutes**
+**Продължителност: 2 минути**
 
-### Clean Code Practices
+### Практики за чист код
 
-**Descriptive Method Names:**
+**Описателни имена на методи:**
 ```java
-// GOOD - Self-documenting
+// ДОБРЕ - Самодокументиращи се
 private void validateDeliveryDestination(ShipmentRequest request)
 private void validateStatusTransition(ShipmentStatus current, ShipmentStatus next)
 public boolean isOfficeDelivery()
 
-// BAD - Unclear purpose
+// ЛОШО - Неясна цел
 private void check(Request r)
 private void validate(Status s)
 public boolean flag1()
 ```
 
-### Comprehensive JavaDoc
+### Изчерпателен JavaDoc
 
 ```java
 /**
- * Registers a new shipment in the system.
+ * Регистрира нова пратка в системата.
  *
- * @param request           shipment details including sender, recipient, weight
- * @param employeeUsername  username of the employee registering the shipment
- * @return registered shipment with calculated price
- * @throws ResourceNotFoundException if sender/recipient/employee not found
- * @throws InvalidDataException if delivery destination is invalid
+ * @param request           детайли за пратката, включително подател, получател, тегло
+ * @param employeeUsername  потребителско име на служителя, регистриращ пратката
+ * @return регистрирана пратка с изчислена цена
+ * @throws ResourceNotFoundException ако подател/получател/служител не е намерен
+ * @throws InvalidDataException ако дестинацията за доставка е невалидна
  */
 public ShipmentResponse registerShipment(ShipmentRequest request, String employeeUsername);
 ```
 
-### No Business Logic in Frontend
+### Никаква бизнес логика във фронтенда
 
 ```javascript
-// Frontend just displays backend response
-const price = response.price;  // Calculated by backend
+// Фронтендът просто показва отговора от бекенда
+const price = response.price;  // Изчислена от бекенда
 
-// NOT: const price = calculatePrice(weight, deliveryType);  // DON'T DO THIS!
+// НЕ: const price = calculatePrice(weight, deliveryType);  // НЕ ПРАВЕТЕ ТОВА!
 ```
 
 ---
 
-## SECTION 12: Live Demonstration Script
+## СЕКЦИЯ 12: Скрипт за демонстрация на живо
 
-**Duration: 10 minutes**
+**Продължителност: 10 минути**
 
-### Step-by-Step Demo
+### Стъпка по стъпка демонстрация
 
-#### 1. Registration & Login (2 min)
+#### 1. Регистрация и вход (2 мин)
 
 ```bash
-# Register an employee
+# Регистрация на служител
 POST /api/auth/register
 {
-  "username": "john_employee",
-  "email": "john@company.com",
+  "username": "ivan_employee",
+  "email": "ivan@company.com",
   "password": "password123",
   "role": "EMPLOYEE"
 }
 
-# Show JWT token in response
+# Покажете JWT токена в отговора
 {
   "token": "eyJhbGciOiJIUzI1NiJ9...",
   "userId": 1,
-  "username": "john_employee",
+  "username": "ivan_employee",
   "role": "EMPLOYEE"
 }
 
-# Register a customer
+# Регистрация на клиент
 POST /api/auth/register
 {
-  "username": "alice_customer",
-  "email": "alice@email.com",
+  "username": "maria_customer",
+  "email": "maria@email.com",
   "password": "password123",
   "role": "CUSTOMER"
 }
 ```
 
-#### 2. Employee Operations (3 min)
+#### 2. Операции на служител (3 мин)
 
 ```bash
-# Create company (as employee)
+# Създаване на компания (като служител)
 POST /api/companies
 Authorization: Bearer <employee_token>
 {
-  "name": "FastShip Logistics",
+  "name": "БързаПратка Логистика",
   "registrationNumber": "REG-12345",
-  "address": "123 Main St",
-  "phone": "+1-555-0100"
+  "address": "ул. Главна 123",
+  "phone": "+359-555-0100"
 }
 
-# Create office
+# Създаване на офис
 POST /api/offices
 {
   "companyId": 1,
-  "name": "Downtown Office",
-  "address": "456 Center Ave",
-  "city": "New York",
-  "country": "USA"
+  "name": "Централен офис",
+  "address": "бул. Център 456",
+  "city": "София",
+  "country": "България"
 }
 
-# Register shipment - show auto-calculated price
+# Регистриране на пратка - покажете автоматично изчислената цена
 POST /api/shipments
 {
   "senderId": 1,
   "recipientId": 2,
   "originOfficeId": 1,
-  "deliveryAddress": "789 Customer Blvd",
+  "deliveryAddress": "бул. Клиент 789",
   "weight": 5.00
 }
 
-# Point out: Price was calculated automatically!
-# 5.00 base + (5 × 2.00) + 10.00 address fee = 25.00
+# Обърнете внимание: Цената е изчислена автоматично!
+# 5.00 база + (5 × 2.00) + 10.00 такса за адрес = 25.00
 ```
 
-#### 3. Customer View (2 min)
+#### 3. Изглед на клиент (2 мин)
 
 ```bash
-# Login as customer
+# Вход като клиент
 POST /api/auth/login
-{ "username": "alice_customer", "password": "password123" }
+{ "username": "maria_customer", "password": "password123" }
 
-# View shipments - only see own
+# Преглед на пратки - вижда само собствените си
 GET /api/shipments
 Authorization: Bearer <customer_token>
-# Returns only shipments where alice is sender or recipient
+# Връща само пратки, където maria е подател или получател
 
-# Try to access another shipment
+# Опит за достъп до друга пратка
 GET /api/shipments/999
-# Returns 403 Forbidden: "You can only view your own shipments"
+# Връща 403 Forbidden: "Можете да преглеждате само собствените си пратки"
 ```
 
-#### 4. Reports (2 min)
+#### 4. Справки (2 мин)
 
 ```bash
-# Generate revenue report (as employee)
+# Генериране на справка за приходи (като служител)
 GET /api/reports/revenue?startDate=2024-01-01&endDate=2024-12-31
 Authorization: Bearer <employee_token>
 
-# Response:
+# Отговор:
 {
   "startDate": "2024-01-01",
   "endDate": "2024-12-31",
@@ -1381,214 +1381,214 @@ Authorization: Bearer <employee_token>
 }
 ```
 
-#### 5. Configuration Change (1 min)
+#### 5. Промяна на конфигурация (1 мин)
 
 ```sql
--- In MySQL, update pricing
+-- В MySQL, актуализирайте ценообразуването
 UPDATE pricing_config SET base_price = 7.00 WHERE active = true;
 ```
 
 ```bash
-# Register new shipment
+# Регистрирайте нова пратка
 POST /api/shipments
 { ... weight: 5.00 ... }
 
-# Show new price: 7.00 + (5 × 2.00) + 10.00 = 27.00
-# (was 25.00 before)
+# Покажете новата цена: 7.00 + (5 × 2.00) + 10.00 = 27.00
+# (преди беше 25.00)
 ```
 
 ---
 
-## SECTION 13: Common Questions & Answers
+## СЕКЦИЯ 13: Често задавани въпроси и отговори
 
-### Q1: "Why use BigDecimal instead of double?"
+### В1: "Защо използвате BigDecimal вместо double?"
 
-**A:** "Double uses IEEE 754 floating-point representation, which can't exactly represent all decimal values. For example, `0.1 + 0.2` in double equals `0.30000000000000004`, not `0.3`. In financial calculations, these small errors can accumulate and cause significant discrepancies. BigDecimal uses arbitrary-precision decimal representation, ensuring exact calculations. This is why all monetary values in my system - prices, salaries, fees - use BigDecimal."
+**О:** "Double използва IEEE 754 представяне с плаваща запетая, което не може да представи точно всички десетични стойности. Например, `0.1 + 0.2` в double е равно на `0.30000000000000004`, не на `0.3`. При финансови изчисления тези малки грешки могат да се натрупат и да причинят значителни несъответствия. BigDecimal използва представяне с произволна точност, осигурявайки точни изчисления. Затова всички парични стойности в моята система - цени, заплати, такси - използват BigDecimal."
 
-### Q2: "Explain the difference between authentication and authorization in your system."
+### В2: "Обяснете разликата между автентикация и оторизация във вашата система."
 
-**A:** "Authentication verifies WHO the user is. In my system, this happens when the user logs in:
-- User provides username/password
-- AuthService validates credentials against the database
-- If valid, a JWT token is generated containing the username and role
+**О:** "Автентикацията проверява КОЙ е потребителят. В моята система това се случва, когато потребителят влезе:
+- Потребителят предоставя потребителско име/парола
+- AuthService валидира данните спрямо базата данни
+- Ако са валидни, се генерира JWT токен, съдържащ потребителското име и роля
 
-Authorization determines WHAT the user can do. This happens on every request:
-- JwtAuthenticationFilter extracts and validates the token
-- `@PreAuthorize("hasRole('EMPLOYEE')")` checks if the user has the required role
-- Service layer further filters data based on user identity"
+Оторизацията определя КАКВО може да прави потребителят. Това се случва при всяка заявка:
+- JwtAuthenticationFilter извлича и валидира токена
+- `@PreAuthorize("hasRole('EMPLOYEE')")` проверява дали потребителят има необходимата роля
+- Service слоят допълнително филтрира данни въз основа на идентичността на потребителя"
 
-### Q3: "What happens if two employees try to update the same shipment simultaneously?"
+### В3: "Какво се случва, ако двама служители се опитат да актуализират една и съща пратка едновременно?"
 
-**A:** "Spring's `@Transactional` annotation ensures database operations are atomic. If two employees update simultaneously:
-1. Each transaction reads the current state
-2. Each makes its changes
-3. The first to commit succeeds
-4. The second either overwrites (last-write-wins) or fails if there's a conflict
+**О:** "Анотацията `@Transactional` на Spring осигурява, че операциите с базата данни са атомарни. Ако двама служители актуализират едновременно:
+1. Всяка транзакция чете текущото състояние
+2. Всяка прави своите промени
+3. Първата, която commit-не, успява
+4. Втората или презаписва (last-write-wins), или се проваля, ако има конфликт
 
-For true optimistic locking, I could add a `@Version` field to the entity, which would throw `OptimisticLockException` on concurrent updates. This wasn't implemented as it wasn't in the requirements, but it's an enhancement I'm aware of."
+За истинско оптимистично заключване бих могъл да добавя поле `@Version` към entity-то, което би хвърлило `OptimisticLockException` при конкурентни актуализации. Това не е имплементирано, тъй като не беше в изискванията, но съм наясно с това подобрение."
 
-### Q4: "Why is pricing in the database instead of the code?"
+### В4: "Защо ценообразуването е в базата данни вместо в кода?"
 
-**A:** "Storing pricing in the database provides several benefits:
-1. **No redeployment**: Prices can change without rebuilding and redeploying the application
-2. **Audit trail**: We can track pricing changes over time by keeping old configurations
-3. **Runtime flexibility**: Business users could update prices through an admin interface
-4. **Open/Closed Principle**: The pricing logic is closed for modification but open for extension through configuration"
+**О:** "Съхранението на ценообразуването в базата данни предоставя няколко предимства:
+1. **Без повторно разгръщане**: Цените могат да се променят без повторно изграждане и разгръщане на приложението
+2. **Одитна следа**: Можем да проследяваме промените в ценообразуването във времето, като запазваме стари конфигурации
+3. **Гъвкавост по време на изпълнение**: Бизнес потребителите биха могли да актуализират цени през админ интерфейс
+4. **Принцип отворен/затворен**: Логиката за ценообразуване е затворена за модификация, но отворена за разширение чрез конфигурация"
 
-### Q5: "Show me how you prevent SQL injection."
+### В5: "Покажете ми как предотвратявате SQL инжекция."
 
-**A:** "I use Spring Data JPA, which generates parameterized queries. For example:
+**О:** "Използвам Spring Data JPA, което генерира параметризирани заявки. Например:
 
 ```java
 shipmentRepository.findBySenderIdOrRecipientId(customerId, customerId)
 ```
 
-This generates:
+Това генерира:
 ```sql
 SELECT * FROM shipments WHERE sender_id = ? OR recipient_id = ?
 ```
 
-The `?` placeholders are filled with properly escaped parameter values, making SQL injection impossible. I never concatenate user input into SQL strings."
+Заместителите `?` се попълват с правилно ескейпнати стойности на параметри, правейки SQL инжекцията невъзможна. Никога не конкатенирам потребителски вход в SQL низове."
 
-### Q6: "What would you change if this went to production?"
+### В6: "Какво бихте променили, ако това влезе в продукция?"
 
-**A:** "Several enhancements would be needed:
-1. **Caching**: Add Redis for frequently accessed data like pricing configuration
-2. **Rate limiting**: Prevent API abuse with request throttling
-3. **Logging**: Structured logging (JSON) with correlation IDs for request tracing
-4. **Monitoring**: Metrics endpoint for Prometheus, dashboards in Grafana
-5. **HTTPS**: Enforce TLS for all connections
-6. **Environment configuration**: Externalize sensitive config (database passwords, JWT secret) to environment variables or a vault
-7. **Database migrations**: Use Flyway or Liquibase for schema version control"
+**О:** "Ще са необходими няколко подобрения:
+1. **Кеширане**: Добавяне на Redis за често достъпвани данни като конфигурация за ценообразуване
+2. **Ограничаване на заявките**: Предотвратяване на злоупотреба с API чрез throttling на заявки
+3. **Логиране**: Структурирано логиране (JSON) с correlation ID-та за проследяване на заявки
+4. **Мониторинг**: Metrics endpoint за Prometheus, табла в Grafana
+5. **HTTPS**: Налагане на TLS за всички връзки
+6. **Конфигурация на средата**: Изнасяне на чувствителна конфигурация (пароли за база данни, JWT secret) в променливи на средата или vault
+7. **Миграции на база данни**: Използване на Flyway или Liquibase за контрол на версиите на схемата"
 
-### Q7: "Explain how JWT token validation works."
+### В7: "Обяснете как работи валидацията на JWT токена."
 
-**A:** "The flow is:
-1. Client sends request with `Authorization: Bearer <token>` header
-2. `JwtAuthenticationFilter.doFilterInternal()` intercepts the request
-3. Token is extracted from the header
-4. `JwtTokenProvider.validateToken()` is called:
-   - Parses the token using the secret key
-   - Verifies the signature hasn't been tampered with
-   - Checks the expiration date
-5. If valid, username is extracted and `UserDetailsService` loads the user
-6. A `UsernamePasswordAuthenticationToken` is created and set in the SecurityContext
-7. The request proceeds to the controller with authentication available"
+**О:** "Потокът е:
+1. Клиентът изпраща заявка с хедър `Authorization: Bearer <token>`
+2. `JwtAuthenticationFilter.doFilterInternal()` прихваща заявката
+3. Токенът се извлича от хедъра
+4. Извиква се `JwtTokenProvider.validateToken()`:
+   - Парсва токена, използвайки секретния ключ
+   - Проверява, че подписът не е манипулиран
+   - Проверява датата на изтичане
+5. Ако е валиден, потребителското име се извлича и `UserDetailsService` зарежда потребителя
+6. Създава се `UsernamePasswordAuthenticationToken` и се задава в SecurityContext
+7. Заявката продължава към контролера с налична автентикация"
 
-### Q8: "Why separate DTOs from entities?"
+### В8: "Защо разделяте DTO от entities?"
 
-**A:** "DTOs (Data Transfer Objects) serve different purposes than entities:
-1. **Decoupling**: API contracts don't change when database schema changes
-2. **Security**: Entities may have fields we don't want to expose (password hash)
-3. **Validation**: DTOs have validation annotations for request data
-4. **Flexibility**: Response DTOs can combine data from multiple entities
-5. **Performance**: We can include only the fields needed for a specific response"
+**О:** "DTO (Data Transfer Objects) служат за различни цели от entities:
+1. **Декуплиране**: API контрактите не се променят, когато схемата на базата данни се промени
+2. **Сигурност**: Entities могат да имат полета, които не искаме да излагаме (password hash)
+3. **Валидация**: DTO имат анотации за валидация на данни от заявки
+4. **Гъвкавост**: Response DTO могат да комбинират данни от множество entities
+5. **Производителност**: Можем да включим само полетата, необходими за конкретен отговор"
 
-### Q9: "How do you ensure data consistency?"
+### В9: "Как осигурявате консистентност на данните?"
 
-**A:** "Multiple mechanisms ensure consistency:
-1. **Database constraints**: Foreign keys, NOT NULL, UNIQUE
-2. **`@Transactional`**: Service methods run in transactions that rollback on failure
-3. **Validation**: Multi-layer validation prevents invalid data from being saved
-4. **Business rules**: Service layer enforces rules like 'either address OR office'
-5. **Entity callbacks**: `@PrePersist` and `@PreUpdate` set timestamps automatically"
+**О:** "Множество механизми осигуряват консистентност:
+1. **Ограничения на базата данни**: Външни ключове, NOT NULL, UNIQUE
+2. **`@Transactional`**: Service методите се изпълняват в транзакции, които се отменят при неуспех
+3. **Валидация**: Многослойна валидация предотвратява запазването на невалидни данни
+4. **Бизнес правила**: Service слоят налага правила като 'или адрес ИЛИ офис'
+5. **Entity callbacks**: `@PrePersist` и `@PreUpdate` задават timestamps автоматично"
 
-### Q10: "What if a customer tries to register a shipment?"
+### В10: "Какво ако клиент се опита да регистрира пратка?"
 
-**A:** "The `@PreAuthorize("hasRole('EMPLOYEE')")` annotation on the `registerShipment` endpoint blocks customers completely. Spring Security intercepts the request before it reaches the controller and returns:
+**О:** "Анотацията `@PreAuthorize("hasRole('EMPLOYEE')")` върху крайната точка `registerShipment` напълно блокира клиентите. Spring Security прихваща заявката преди да достигне контролера и връща:
 
 ```json
 {
   "status": 403,
   "error": "Forbidden",
-  "message": "You do not have permission to access this resource"
+  "message": "Нямате право на достъп до този ресурс"
 }
 ```
 
-The customer never gets past the security filter."
+Клиентът никога не преминава отвъд филтъра за сигурност."
 
 ---
 
-## SECTION 14: Project Strengths to Highlight
+## СЕКЦИЯ 14: Силни страни на проекта за подчертаване
 
-### Say These Confidently
+### Кажете това уверено
 
-- "Complete implementation of all 8 required reports with role-based access"
-- "Strict SOLID principles with documentation in every service class"
-- "Multi-layer validation: frontend, DTO annotations, service layer, exception handler"
-- "Database-driven pricing configuration for runtime flexibility"
-- "Role-based access control with proper customer data isolation"
-- "BigDecimal usage throughout for financial accuracy"
-- "Clean layered architecture with proper separation of concerns"
-- "JWT stateless authentication with 24-hour token expiration"
-- "RESTful API design following HTTP conventions"
-- "Comprehensive test coverage of critical business logic"
-
----
-
-## SECTION 15: Technical Decisions Justification
-
-### Be Ready to Explain WHY
-
-| Decision | Justification |
-|----------|---------------|
-| **Java 17** | Current LTS version, modern features (records, sealed classes available), long-term support |
-| **Spring Boot 3.2** | Industry standard, auto-configuration, embedded server, extensive ecosystem |
-| **JWT Authentication** | Stateless (no server-side session), scalable, works well with REST APIs |
-| **MySQL 8.0** | ACID compliance, relational data with foreign keys, mature and reliable |
-| **Layered Architecture** | Separation of concerns, easier testing, maintainability |
-| **Interface-based Services** | Dependency inversion, testability with mocks, implementation flexibility |
-| **BigDecimal** | Financial precision, no floating-point errors |
-| **Database Pricing** | Runtime configurability, no redeployment for price changes |
-| **Spring Data JPA** | Reduces boilerplate, type-safe queries, automatic query generation |
-| **BCrypt Password Hashing** | Industry-standard, includes salt, adjustable work factor |
+- "Пълна имплементация на всичките 8 изисквани справки с контрол на достъпа, базиран на роли"
+- "Стриктни SOLID принципи с документация във всеки service клас"
+- "Многослойна валидация: фронтенд, DTO анотации, service слой, exception handler"
+- "Конфигурация на ценообразуване, управлявана от база данни, за гъвкавост по време на изпълнение"
+- "Контрол на достъпа, базиран на роли, с правилна изолация на данни на клиенти"
+- "Използване на BigDecimal навсякъде за финансова точност"
+- "Чиста слоеста архитектура с правилно разделяне на отговорностите"
+- "JWT stateless автентикация с 24-часово изтичане на токена"
+- "RESTful API дизайн, следващ HTTP конвенции"
+- "Изчерпателно тестово покритие на критичната бизнес логика"
 
 ---
 
-## Presentation Timing Summary
+## СЕКЦИЯ 15: Обосновка на техническите решения
 
-| Section | Duration |
-|---------|----------|
-| 1. Introduction | 2-3 min |
-| 2. Architecture | 5 min |
-| **3. SOLID Principles** | **10 min** (most important!) |
-| 4. Database | 5 min |
-| 5. Security | 5 min |
-| 6. Pricing | 5 min |
-| 7. Validation | 4 min |
-| 8. Access Control | 3 min |
-| 9. Reports | 3 min |
-| 10. Testing | 3 min |
-| 11. Code Quality | 2 min |
-| 12. Live Demo | 10 min |
-| 13. Q&A | 15 min |
-| **Total** | **~60 minutes** |
+### Бъдете готови да обясните ЗАЩО
+
+| Решение | Обосновка |
+|---------|-----------|
+| **Java 17** | Текуща LTS версия, модерни функции (records, sealed classes налични), дългосрочна поддръжка |
+| **Spring Boot 3.2** | Индустриален стандарт, автоматична конфигурация, вграден сървър, обширна екосистема |
+| **JWT автентикация** | Stateless (без сесия от страна на сървъра), мащабируема, работи добре с REST API |
+| **MySQL 8.0** | ACID съвместимост, релационни данни с външни ключове, зряла и надеждна |
+| **Слоеста архитектура** | Разделяне на отговорностите, по-лесно тестване, поддръжка |
+| **Services, базирани на интерфейси** | Обръщане на зависимостите, тестваемост с мокове, гъвкавост на имплементацията |
+| **BigDecimal** | Финансова точност, без грешки с плаваща запетая |
+| **Ценообразуване от база данни** | Конфигурируемост по време на изпълнение, без повторно разгръщане за промяна на цени |
+| **Spring Data JPA** | Намалява шаблонен код, type-safe заявки, автоматично генериране на заявки |
+| **BCrypt хеширане на пароли** | Индустриален стандарт, включва сол, настройваем work factor |
 
 ---
 
-## Quick Reference Card
+## Резюме на времето за презентация
 
-### Key Files to Know
+| Секция | Продължителност |
+|--------|-----------------|
+| 1. Въведение | 2-3 мин |
+| 2. Архитектура | 5 мин |
+| **3. SOLID принципи** | **10 мин** (най-важна!) |
+| 4. База данни | 5 мин |
+| 5. Сигурност | 5 мин |
+| 6. Ценообразуване | 5 мин |
+| 7. Валидация | 4 мин |
+| 8. Контрол на достъпа | 3 мин |
+| 9. Справки | 3 мин |
+| 10. Тестване | 3 мин |
+| 11. Качество на кода | 2 мин |
+| 12. Демонстрация на живо | 10 мин |
+| 13. Въпроси и отговори | 15 мин |
+| **Общо** | **~60 минути** |
 
-| File | Purpose | Show For |
-|------|---------|----------|
-| `pom.xml` | Dependencies | Introduction |
-| `SecurityConfig.java` | JWT setup | Security section |
-| `ShipmentController.java` | REST + DIP | Architecture |
+---
+
+## Бърза референтна карта
+
+### Ключови файлове за познаване
+
+| Файл | Цел | Показване за |
+|------|-----|--------------|
+| `pom.xml` | Зависимости | Въведение |
+| `SecurityConfig.java` | JWT настройка | Секция за сигурност |
+| `ShipmentController.java` | REST + DIP | Архитектура |
 | `PricingServiceImpl.java` | SRP + OCP | SOLID |
-| `ShipmentRequest.java` | Validation | Validation |
-| `GlobalExceptionHandler.java` | Error handling | Validation |
-| `PricingServiceTest.java` | Unit testing | Testing |
-| `schema.sql` | Database design | Database |
+| `ShipmentRequest.java` | Валидация | Валидация |
+| `GlobalExceptionHandler.java` | Обработка на грешки | Валидация |
+| `PricingServiceTest.java` | Unit тестване | Тестване |
+| `schema.sql` | Дизайн на база данни | База данни |
 
-### SOLID Quick Reminder
+### SOLID бързо напомняне
 
-- **S**ingle Responsibility: One class = one reason to change
-- **O**pen/Closed: Open for extension, closed for modification
-- **L**iskov Substitution: Subtypes must be substitutable for base types
-- **I**nterface Segregation: No fat interfaces, focused contracts
-- **D**ependency Inversion: Depend on abstractions, not concretions
+- **S**ingle Responsibility: Един клас = една причина за промяна
+- **O**pen/Closed: Отворен за разширение, затворен за модификация
+- **L**iskov Substitution: Подтиповете трябва да могат да заместват базовите типове
+- **I**nterface Segregation: Никакви дебели интерфейси, фокусирани контракти
+- **D**ependency Inversion: Зависимост от абстракции, не от конкретни реализации
 
 ---
 
-**Good luck with your presentation!**
+**Успех с презентацията!**
