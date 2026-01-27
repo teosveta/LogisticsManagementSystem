@@ -153,15 +153,6 @@ async function renderRegisterShipment() {
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Destination Office</label>
-                        <select id="destinationOfficeId" required>
-                            ${createSelectOptions(offices, 'id', o => `${o.name} - ${o.address}`, null, 'Select destination office...')}
-                        </select>
-                        <small class="form-hint">Origin office is automatically set from your assigned office</small>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
                         <label>Weight (kg)</label>
                         <input type="number" id="weight" step="0.01" min="0.01" max="10000" required placeholder="e.g. 2.5">
                     </div>
@@ -172,6 +163,13 @@ async function renderRegisterShipment() {
                             <option value="true">To Address (+${deliveryFee} BGN)</option>
                         </select>
                     </div>
+                </div>
+                <div class="form-group" id="destinationOfficeGroup">
+                    <label>Destination Office</label>
+                    <select id="destinationOfficeId" required>
+                        ${createSelectOptions(offices, 'id', o => `${o.name} - ${o.address}`, null, 'Select destination office...')}
+                    </select>
+                    <small class="form-hint">Origin office is automatically set from your assigned office</small>
                 </div>
                 <div class="form-group" id="addressGroup" style="display:none">
                     <label>Delivery Address</label>
@@ -199,6 +197,8 @@ function setupShipmentForm() {
     const deliveryType = document.getElementById('deliverToAddress');
     const addressGroup = document.getElementById('addressGroup');
     const addressInput = document.getElementById('deliveryAddress');
+    const officeGroup = document.getElementById('destinationOfficeGroup');
+    const officeSelect = document.getElementById('destinationOfficeId');
 
     // Price preview calculation using backend pricing info
     // Note: This is just for UI preview - actual price is calculated by backend
@@ -218,8 +218,18 @@ function setupShipmentForm() {
 
     deliveryType.addEventListener('change', () => {
         const toAddress = deliveryType.value === 'true';
+        // Toggle visibility: show address field for address delivery, show office field for office delivery
         addressGroup.style.display = toAddress ? 'block' : 'none';
+        officeGroup.style.display = toAddress ? 'none' : 'block';
+        // Toggle required: only require the field that is visible
         addressInput.required = toAddress;
+        officeSelect.required = !toAddress;
+        // Clear the hidden field's value
+        if (toAddress) {
+            officeSelect.value = '';
+        } else {
+            addressInput.value = '';
+        }
         updatePricePreview();
     });
 
@@ -1380,8 +1390,7 @@ window.renderCustomers = renderCustomers;
 async function renderReports() {
     const contentArea = getContentArea();
     const today = new Date();
-    const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const defaultStartDate = '2025-12-01';
 
     const formatDateInput = (date) => date.toISOString().split('T')[0];
 
@@ -1391,7 +1400,7 @@ async function renderReports() {
         <div class="report-section">
             <h4>Revenue Report</h4>
             <div class="report-controls">
-                <label>From: <input type="date" id="revenueFromDate" value="${formatDateInput(thirtyDaysAgo)}"></label>
+                <label>From: <input type="date" id="revenueFromDate" value="${defaultStartDate}"></label>
                 <label>To: <input type="date" id="revenueToDate" value="${formatDateInput(today)}"></label>
                 <button class="primary-btn" id="generateRevenueBtn">Generate Revenue Report</button>
             </div>

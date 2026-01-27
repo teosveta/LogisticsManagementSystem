@@ -13,13 +13,6 @@ import java.util.List;
 
 /**
  * Repository interface for Shipment entity database operations.
- *
- * SOLID Principles Applied:
- * - Interface Segregation (ISP): Contains only shipment-specific query methods.
- * - Dependency Inversion (DIP): Services depend on this abstraction.
- * - Single Responsibility (SRP): This repository only handles data access for shipments.
- *   Revenue calculations and business logic are in dedicated services.
- *
  * Spring Data JPA provides the implementation automatically.
  */
 @Repository

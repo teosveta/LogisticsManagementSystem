@@ -9,10 +9,6 @@ import java.math.BigDecimal;
 
 /**
  * DTO for shipment creation requests.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only shipment input data transfer.
- *   Price calculation is NOT done here - that's delegated to PricingService
  *   following SRP (this DTO just carries data, not business logic).
  *
  * Validation Rules:
