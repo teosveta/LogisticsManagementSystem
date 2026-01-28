@@ -22,13 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of EmployeeService.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Only handles employee business logic.
- * - Dependency Inversion (DIP): Depends on repository interfaces.
- */
 @Service
 @Transactional
 public class EmployeeServiceImpl implements EmployeeService {
@@ -54,30 +47,25 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeResponse createEmployee(EmployeeRequest request) {
         logger.info("Creating employee for user ID: {}", request.getUserId());
 
-        // Validate user exists
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getUserId()));
 
-        // Check if employee already exists for this user
         if (employeeRepository.existsByUserId(request.getUserId())) {
             throw new DuplicateResourceException("Employee", "userId", request.getUserId());
         }
 
-        // Create employee
         Employee employee = new Employee();
         employee.setUser(user);
         employee.setEmployeeType(request.getEmployeeType());
         employee.setHireDate(request.getHireDate());
         employee.setSalary(request.getSalary());
 
-        // Set company if provided (optional for self-registered employees)
         if (request.getCompanyId() != null) {
             Company company = companyRepository.findById(request.getCompanyId())
                     .orElseThrow(() -> new ResourceNotFoundException("Company", "id", request.getCompanyId()));
             employee.setCompany(company);
         }
 
-        // Set office if provided
         if (request.getOfficeId() != null) {
             Office office = officeRepository.findById(request.getOfficeId())
                     .orElseThrow(() -> new ResourceNotFoundException("Office", "id", request.getOfficeId()));
@@ -129,9 +117,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", id));
 
-        // Update company if provided
         if (request.getCompanyId() != null) {
-            // Only fetch company if it's different from current
             Long currentCompanyId = employee.getCompany() != null ? employee.getCompany().getId() : null;
             if (!request.getCompanyId().equals(currentCompanyId)) {
                 Company company = companyRepository.findById(request.getCompanyId())
@@ -139,7 +125,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                 employee.setCompany(company);
             }
         } else {
-            // Allow removing company assignment
             employee.setCompany(null);
         }
 
@@ -147,7 +132,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setHireDate(request.getHireDate());
         employee.setSalary(request.getSalary());
 
-        // Update office
         if (request.getOfficeId() != null) {
             Office office = officeRepository.findById(request.getOfficeId())
                     .orElseThrow(() -> new ResourceNotFoundException("Office", "id", request.getOfficeId()));

@@ -5,10 +5,6 @@ import com.logistics.model.enums.Role;
 /**
  * DTO for authentication responses (login/register).
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This DTO only handles authentication response data.
- *   Never exposes sensitive data like password hashes.
- *
  * Contains JWT token and basic user information after successful authentication.
  */
 public class AuthResponse {

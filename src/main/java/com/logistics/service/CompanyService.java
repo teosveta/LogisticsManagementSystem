@@ -7,11 +7,6 @@ import java.util.List;
 
 /**
  * Service interface for Company operations.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Only handles company-related business logic.
- * - Interface Segregation (ISP): Contains only methods relevant to companies.
- * - Dependency Inversion (DIP): Controllers depend on this interface, not implementation.
  */
 public interface CompanyService {
 

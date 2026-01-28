@@ -9,10 +9,6 @@ import java.util.List;
 /**
  * Repository interface for Office entity database operations.
  *
- * SOLID Principles Applied:
- * - Interface Segregation (ISP): Contains only office-specific query methods.
- * - Dependency Inversion (DIP): Services depend on this abstraction.
- *
  * Spring Data JPA provides the implementation automatically.
  */
 @Repository

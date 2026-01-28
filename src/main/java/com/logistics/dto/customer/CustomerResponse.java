@@ -4,9 +4,6 @@ import java.time.LocalDateTime;
 
 /**
  * DTO for customer responses.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only customer data transfer for output.
  */
 public class CustomerResponse {
 

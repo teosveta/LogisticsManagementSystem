@@ -7,11 +7,6 @@ import java.util.List;
 
 /**
  * Service interface for Employee operations.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Only handles employee-related business logic.
- * - Interface Segregation (ISP): Contains only methods relevant to employees.
- * - Dependency Inversion (DIP): Controllers depend on this interface.
  */
 public interface EmployeeService {
 

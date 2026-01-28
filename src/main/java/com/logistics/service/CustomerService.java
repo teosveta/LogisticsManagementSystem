@@ -7,11 +7,6 @@ import java.util.List;
 
 /**
  * Service interface for Customer operations.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Only handles customer-related business logic.
- * - Interface Segregation (ISP): Contains only methods relevant to customers.
- * - Dependency Inversion (DIP): Controllers depend on this interface.
  */
 public interface CustomerService {
 

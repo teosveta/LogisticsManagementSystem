@@ -3,10 +3,6 @@ package com.logistics.model.enums;
 /**
  * Enumeration representing user roles in the system.
  *
- * SOLID Principle - Single Responsibility (SRP):
- * This enum has one responsibility: defining the possible roles a user can have.
- * It doesn't contain role-specific logic; that belongs in the security layer.
- *
  * Role-based access control:
  * - EMPLOYEE: Can manage shipments, view all data, access all reports
  * - CUSTOMER: Can only view their own shipments (sent or received)

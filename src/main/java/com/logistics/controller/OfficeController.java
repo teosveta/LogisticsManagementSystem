@@ -16,15 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * REST Controller for office management.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only office-related HTTP endpoints.
- * - Dependency Inversion (DIP): Depends on OfficeService interface.
- *
- * Access: EMPLOYEE role only.
- */
 @RestController
 @RequestMapping("/api/offices")
 @Tag(name = "Offices", description = "Office management endpoints")

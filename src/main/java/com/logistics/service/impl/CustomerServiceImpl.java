@@ -18,13 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of CustomerService.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Only handles customer business logic.
- * - Dependency Inversion (DIP): Depends on repository interfaces.
- */
 @Service
 @Transactional
 public class CustomerServiceImpl implements CustomerService {
@@ -43,16 +36,13 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerResponse createCustomer(CustomerRequest request) {
         logger.info("Creating customer for user ID: {}", request.getUserId());
 
-        // Validate user exists
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getUserId()));
 
-        // Check if customer already exists for this user
         if (customerRepository.existsByUserId(request.getUserId())) {
             throw new DuplicateResourceException("Customer", "userId", request.getUserId());
         }
 
-        // Create customer
         Customer customer = new Customer();
         customer.setUser(user);
         customer.setPhone(request.getPhone());

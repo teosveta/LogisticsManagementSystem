@@ -26,28 +26,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * REST Controller for report endpoints.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only report-related HTTP endpoints.
- *   Does not contain business logic - delegates to ReportService and ShipmentService.
- * - Dependency Inversion (DIP): Depends on service interfaces (ReportService,
- *   ShipmentService, CustomerService), not on concrete implementations or repositories.
- *   This ensures proper layer separation and testability.
- *
- * Access Control:
- * - EMPLOYEE: Can access all reports
- * - CUSTOMER: Can only access their own sent/received shipment reports
- *
- * Report Endpoints:
- * - GET /api/reports/employees - All employees (Employee only)
- * - GET /api/reports/customers - All customers (Employee only)
- * - GET /api/reports/shipments - All shipments (Employee) / Own shipments (Customer)
- * - GET /api/reports/shipments/employee/{id} - Shipments by employee (Employee only)
- * - GET /api/reports/shipments/pending - Pending shipments (Employee only)
- * - GET /api/reports/shipments/customer/{id}/sent - Sent by customer
- * - GET /api/reports/shipments/customer/{id}/received - Received by customer
- * - GET /api/reports/revenue?startDate=...&endDate=... - Revenue report (Employee only)
+ * Employees can access all reports. Customers can only view their own shipments.
  */
 @RestController
 @RequestMapping("/api/reports")
@@ -69,9 +48,6 @@ public class ReportController {
         this.customerService = customerService;
     }
 
-    /**
-     * Gets all employees report (Employee only).
-     */
     @GetMapping("/employees")
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "All employees report", description = "Lists all employees (Employee only)")
@@ -81,9 +57,6 @@ public class ReportController {
         return ResponseEntity.ok(employees);
     }
 
-    /**
-     * Gets all customers report (Employee only).
-     */
     @GetMapping("/customers")
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "All customers report", description = "Lists all customers (Employee only)")
@@ -93,33 +66,22 @@ public class ReportController {
         return ResponseEntity.ok(customers);
     }
 
-    /**
-     * Gets all shipments report.
-     * Employee sees ALL shipments.
-     * Customer sees only their own shipments.
-     */
     @GetMapping("/shipments")
     @Operation(summary = "All shipments report", description = "Employees see all. Customers see only their own.")
     public ResponseEntity<List<ShipmentResponse>> getAllShipmentsReport(Authentication authentication) {
         logger.debug("Generating shipments report for user: {}", authentication.getName());
 
         List<ShipmentResponse> shipments;
-
         if (isCustomer(authentication)) {
-            // Customer: only their shipments
             Long customerId = getCustomerIdFromAuth(authentication);
             shipments = shipmentService.getShipmentsByCustomerId(customerId);
         } else {
-            // Employee: all shipments
             shipments = reportService.getAllShipmentsReport();
         }
 
         return ResponseEntity.ok(shipments);
     }
 
-    /**
-     * Gets shipments registered by a specific employee (Employee only).
-     */
     @GetMapping("/shipments/employee/{employeeId}")
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "Shipments by employee", description = "Lists shipments registered by an employee (Employee only)")
@@ -129,9 +91,6 @@ public class ReportController {
         return ResponseEntity.ok(shipments);
     }
 
-    /**
-     * Gets pending (non-delivered) shipments (Employee only).
-     */
     @GetMapping("/shipments/pending")
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "Pending shipments", description = "Lists all non-delivered shipments (Employee only)")
@@ -141,11 +100,6 @@ public class ReportController {
         return ResponseEntity.ok(shipments);
     }
 
-    /**
-     * Gets shipments sent by a specific customer.
-     * Employee can view any customer's sent shipments.
-     * Customer can only view their own sent shipments.
-     */
     @GetMapping("/shipments/customer/{customerId}/sent")
     @Operation(summary = "Shipments sent by customer", description = "Lists shipments sent by a customer")
     public ResponseEntity<List<ShipmentResponse>> getShipmentsSentByCustomer(
@@ -154,7 +108,6 @@ public class ReportController {
 
         logger.debug("Generating sent shipments report for customer ID: {}", customerId);
 
-        // If customer, verify they're accessing their own data
         if (isCustomer(authentication)) {
             Long authCustomerId = getCustomerIdFromAuth(authentication);
             if (!customerId.equals(authCustomerId)) {
@@ -166,11 +119,6 @@ public class ReportController {
         return ResponseEntity.ok(shipments);
     }
 
-    /**
-     * Gets shipments received by a specific customer.
-     * Employee can view any customer's received shipments.
-     * Customer can only view their own received shipments.
-     */
     @GetMapping("/shipments/customer/{customerId}/received")
     @Operation(summary = "Shipments received by customer", description = "Lists shipments received by a customer")
     public ResponseEntity<List<ShipmentResponse>> getShipmentsReceivedByCustomer(
@@ -179,7 +127,6 @@ public class ReportController {
 
         logger.debug("Generating received shipments report for customer ID: {}", customerId);
 
-        // If customer, verify they're accessing their own data
         if (isCustomer(authentication)) {
             Long authCustomerId = getCustomerIdFromAuth(authentication);
             if (!customerId.equals(authCustomerId)) {
@@ -191,10 +138,6 @@ public class ReportController {
         return ResponseEntity.ok(shipments);
     }
 
-    /**
-     * Gets revenue report for a date range (Employee only).
-     * Only counts DELIVERED shipments as revenue.
-     */
     @GetMapping("/revenue")
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "Revenue report", description = "Calculates total revenue from DELIVERED shipments (Employee only)")
@@ -207,21 +150,10 @@ public class ReportController {
         return ResponseEntity.ok(revenue);
     }
 
-    /**
-     * Checks if the authenticated user is a customer.
-     */
     private boolean isCustomer(Authentication authentication) {
         return authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
     }
 
-    /**
-     * Gets the customer ID from the authenticated user.
-     * Uses CustomerService to maintain proper layer separation (DIP).
-     *
-     * @param authentication the current authentication context
-     * @return the customer ID for the authenticated user
-     * @throws UnauthorizedException if customer not found
-     */
     private Long getCustomerIdFromAuth(Authentication authentication) {
         String username = authentication.getName();
         try {
@@ -231,10 +163,6 @@ public class ReportController {
         }
     }
 
-    /**
-     * Gets dashboard metrics for employee view.
-     * Returns total shipments, pending, delivered, and total revenue in a single call.
-     */
     @GetMapping("/dashboard")
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "Dashboard metrics", description = "Returns aggregated dashboard metrics (Employee only)")
@@ -244,11 +172,6 @@ public class ReportController {
         return ResponseEntity.ok(metrics);
     }
 
-    /**
-     * Gets dashboard metrics for customer view.
-     * Returns sent, received, in-transit counts and total spent.
-     * Customers can only access their own metrics.
-     */
     @GetMapping("/customer-metrics")
     @Operation(summary = "Customer metrics", description = "Returns customer dashboard metrics")
     public ResponseEntity<CustomerMetricsResponse> getCustomerMetrics(Authentication authentication) {

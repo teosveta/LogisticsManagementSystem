@@ -12,11 +12,6 @@ import java.time.LocalDateTime;
 /**
  * Entity representing a system user for authentication and authorization.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This entity only manages user authentication data.
- *   It doesn't contain business logic - that's in UserService.
- * - Open/Closed (OCP): New roles can be added to the Role enum without modifying this class.
- *
  * A User can be associated with either an Employee or a Customer, but not both.
  * The role field determines access permissions throughout the system.
  */

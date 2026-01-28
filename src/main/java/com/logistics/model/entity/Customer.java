@@ -10,12 +10,6 @@ import java.util.List;
 /**
  * Entity representing a customer who sends or receives shipments.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This entity only manages customer data.
- *   Customer-related operations are handled in CustomerService.
- * - Open/Closed (OCP): Can add customer categories or tiers through
- *   additional fields or composition without modifying core structure.
- *
  * A Customer:
  * - Has exactly one User account (1:1 relationship)
  * - Can send shipments (as sender)

@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 /**
  * DTO for user login requests.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This DTO only handles login credentials transfer.
- *
  * Contains username and password for authentication.
  */
 public class LoginRequest {

@@ -16,13 +16,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
- * Entry point for handling authentication failures.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Only handles authentication failure responses.
- *
- * This class is triggered when an unauthenticated user tries to access a protected resource.
- * It returns a proper JSON error response instead of a redirect or HTML error page.
+ * Returns JSON 401 response when unauthenticated users access protected resources.
  */
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -30,10 +24,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationEntryPoint.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    /**
-     * Called when authentication is required but not provided.
-     * Returns a 401 Unauthorized JSON response.
-     */
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,

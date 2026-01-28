@@ -12,13 +12,6 @@ import java.time.LocalDateTime;
 /**
  * Entity representing a shipment in the logistics system.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This entity only manages shipment data.
- *   Price calculation is delegated to PricingService (not embedded here).
- *   Status transitions are validated in ShipmentService.
- * - Open/Closed (OCP): New shipment types or pricing strategies can be
- *   added through new services without modifying this entity.
- *
  * A Shipment:
  * - Has a sender (Customer) and recipient (Customer)
  * - Is registered by an Employee

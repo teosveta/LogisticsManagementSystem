@@ -11,12 +11,6 @@ import java.util.List;
 /**
  * Entity representing a company office location.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This entity only manages office location data.
- *   Operations involving offices are handled in OfficeService.
- * - Open/Closed (OCP): Can extend functionality through composition rather
- *   than modifying this class.
- *
  * An Office belongs to a Company and can be:
  * - A workplace for office staff employees
  * - A delivery destination for shipments

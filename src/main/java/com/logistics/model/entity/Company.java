@@ -12,12 +12,6 @@ import java.util.List;
 /**
  * Entity representing a logistics company.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This entity only manages company data.
- *   Business operations involving companies are handled in CompanyService.
- * - Open/Closed (OCP): Additional company attributes can be added via inheritance
- *   or new fields without changing existing functionality.
- *
  * A Company has multiple Offices and Employees.
  * In this system, typically there's one main logistics company.
  */

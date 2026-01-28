@@ -16,15 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * REST Controller for company management.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only company-related HTTP endpoints.
- * - Dependency Inversion (DIP): Depends on CompanyService interface.
- *
- * Access: EMPLOYEE role only (company management is administrative).
- */
 @RestController
 @RequestMapping("/api/companies")
 @Tag(name = "Companies", description = "Company management endpoints")

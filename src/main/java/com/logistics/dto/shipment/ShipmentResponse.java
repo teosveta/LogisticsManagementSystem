@@ -8,10 +8,6 @@ import java.time.LocalDateTime;
 /**
  * DTO for shipment responses.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only shipment output data transfer.
- *   Contains all relevant information without exposing internal entity relationships.
- *
  * Note: Both weight and price use BigDecimal for monetary/measurement precision.
  */
 public class ShipmentResponse {

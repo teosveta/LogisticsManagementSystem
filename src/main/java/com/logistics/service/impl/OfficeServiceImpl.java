@@ -17,14 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of OfficeService.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Only handles office business logic.
- * - Open/Closed (OCP): Can add new office types or rules via extension.
- * - Dependency Inversion (DIP): Depends on repository interfaces.
- */
 @Service
 @Transactional
 public class OfficeServiceImpl implements OfficeService {
@@ -43,11 +35,9 @@ public class OfficeServiceImpl implements OfficeService {
     public OfficeResponse createOffice(OfficeRequest request) {
         logger.info("Creating office: {} for company ID: {}", request.getName(), request.getCompanyId());
 
-        // Validate company exists
         Company company = companyRepository.findById(request.getCompanyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Company", "id", request.getCompanyId()));
 
-        // Create office entity
         Office office = new Office();
         office.setCompany(company);
         office.setName(request.getName());
@@ -88,7 +78,6 @@ public class OfficeServiceImpl implements OfficeService {
     public List<OfficeResponse> getOfficesByCompanyId(Long companyId) {
         logger.debug("Fetching offices for company ID: {}", companyId);
 
-        // Validate company exists
         if (!companyRepository.existsById(companyId)) {
             throw new ResourceNotFoundException("Company", "id", companyId);
         }
@@ -105,7 +94,6 @@ public class OfficeServiceImpl implements OfficeService {
         Office office = officeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Office", "id", id));
 
-        // If company is being changed, validate new company exists
         if (!office.getCompany().getId().equals(request.getCompanyId())) {
             Company newCompany = companyRepository.findById(request.getCompanyId())
                     .orElseThrow(() -> new ResourceNotFoundException("Company", "id", request.getCompanyId()));

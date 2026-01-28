@@ -12,9 +12,6 @@ import org.springframework.context.annotation.Configuration;
 /**
  * OpenAPI/Swagger configuration for API documentation.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This class only configures API documentation.
- *
  * Access Swagger UI at: http://localhost:8080/swagger-ui.html
  * Access API docs at: http://localhost:8080/api-docs
  */

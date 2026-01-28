@@ -3,10 +3,6 @@ package com.logistics.model.enums;
 /**
  * Enumeration representing types of employees in the logistics company.
  *
- * SOLID Principle - Single Responsibility (SRP):
- * This enum has one responsibility: categorizing employee types.
- * Business rules about what each type can do are handled in service classes.
- *
  * Employee types:
  * - COURIER: Delivers shipments to customers
  * - OFFICE_STAFF: Serves customers at office locations, registers shipments

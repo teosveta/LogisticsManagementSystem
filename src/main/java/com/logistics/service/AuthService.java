@@ -6,12 +6,6 @@ import com.logistics.dto.auth.RegisterRequest;
 
 /**
  * Service interface for authentication operations.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Only handles authentication (login/register).
- *   User management is in a separate service if needed.
- * - Interface Segregation (ISP): Small, focused interface.
- * - Dependency Inversion (DIP): Controllers depend on this interface.
  */
 public interface AuthService {
 

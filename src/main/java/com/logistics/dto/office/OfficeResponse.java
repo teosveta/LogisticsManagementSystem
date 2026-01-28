@@ -4,9 +4,6 @@ import java.time.LocalDateTime;
 
 /**
  * DTO for office responses.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only office data transfer for output.
  */
 public class OfficeResponse {
 

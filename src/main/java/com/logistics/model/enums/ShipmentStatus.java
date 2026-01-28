@@ -3,10 +3,6 @@ package com.logistics.model.enums;
 /**
  * Enumeration representing the lifecycle status of a shipment.
  *
- * SOLID Principle - Single Responsibility (SRP):
- * This enum has one responsibility: defining valid shipment states.
- * State transition logic is handled in the ShipmentService.
- *
  * Shipment lifecycle:
  * REGISTERED -> IN_TRANSIT -> DELIVERED
  *           \-> CANCELLED (can be cancelled before delivery)

@@ -7,9 +7,6 @@ import jakarta.validation.constraints.Size;
 
 /**
  * DTO for office creation and update requests.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only office data transfer for input.
  */
 public class OfficeRequest {
 

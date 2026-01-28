@@ -16,15 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * REST Controller for customer management.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only customer-related HTTP endpoints.
- * - Dependency Inversion (DIP): Depends on CustomerService interface.
- *
- * Access: EMPLOYEE role only for management operations.
- */
 @RestController
 @RequestMapping("/api/customers")
 @Tag(name = "Customers", description = "Customer management endpoints")

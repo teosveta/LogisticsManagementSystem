@@ -26,16 +26,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Implementation of AuthService.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Only handles authentication logic.
- *   Password encoding is delegated to PasswordEncoder.
- *   Token generation is delegated to JwtTokenProvider.
- * - Dependency Inversion (DIP): Depends on interfaces (PasswordEncoder,
- *   AuthenticationManager) not concrete implementations.
- */
 @Service
 @Transactional
 public class AuthServiceImpl implements AuthService {
@@ -67,17 +57,14 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse register(RegisterRequest request) {
         logger.info("Registering new user: {}", request.getUsername());
 
-        // Check for duplicate username
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new DuplicateResourceException("User", "username", request.getUsername());
         }
 
-        // Check for duplicate email
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("User", "email", request.getEmail());
         }
 
-        // Create user with encrypted password
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
@@ -87,25 +74,21 @@ public class AuthServiceImpl implements AuthService {
         User savedUser = userRepository.save(user);
         logger.info("User created with ID: {}", savedUser.getId());
 
-        // Create role-specific records automatically
+        // Automatically create the role-specific entity (Customer or Employee)
         if (Role.CUSTOMER.equals(request.getRole())) {
-            // Create Customer record for CUSTOMER role
             Customer customer = new Customer(savedUser);
             customerRepository.save(customer);
             logger.info("Customer record created for user: {}", savedUser.getUsername());
         } else if (Role.EMPLOYEE.equals(request.getRole())) {
-            // Create Employee record for EMPLOYEE role
             Employee employee = new Employee();
             employee.setUser(savedUser);
             employee.setEmployeeType(EmployeeType.OFFICE_STAFF);
             employee.setHireDate(LocalDate.now());
             employee.setSalary(BigDecimal.ZERO);
-            // company and office are null - can be assigned later by admin
             employeeRepository.save(employee);
             logger.info("Employee record created for user: {}", savedUser.getUsername());
         }
 
-        // Generate JWT token
         String token = jwtTokenProvider.generateToken(savedUser.getUsername(), savedUser.getRole());
 
         return new AuthResponse(
@@ -121,20 +104,14 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse login(LoginRequest request) {
         logger.info("User login attempt: {}", request.getUsername());
 
-        // Authenticate using Spring Security's AuthenticationManager
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
 
-        // If authentication successful, get user and generate token
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found after authentication"));
 
         String token = jwtTokenProvider.generateToken(user.getUsername(), user.getRole());
-
         logger.info("User logged in successfully: {}", user.getUsername());
 
         return new AuthResponse(

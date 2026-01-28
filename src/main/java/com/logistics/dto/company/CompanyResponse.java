@@ -4,10 +4,6 @@ import java.time.LocalDateTime;
 
 /**
  * DTO for company responses.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only company data transfer for output.
- *   Never exposes internal entity relationships directly.
  */
 public class CompanyResponse {
 

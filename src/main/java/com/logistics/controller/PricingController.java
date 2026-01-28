@@ -16,13 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * REST Controller for pricing configuration endpoints.
- *
- * Provides:
- * - Public endpoint to get current pricing (for shipment forms)
- * - Admin endpoints to view and update pricing configuration (Employee only)
- */
 @RestController
 @RequestMapping("/api/pricing")
 @Tag(name = "Pricing", description = "Pricing configuration endpoints")
@@ -37,11 +30,6 @@ public class PricingController {
         this.pricingService = pricingService;
     }
 
-    /**
-     * Gets the current pricing information.
-     * Used by shipment forms to display pricing preview.
-     * Accessible by all authenticated users.
-     */
     @GetMapping
     @Operation(summary = "Get pricing info", description = "Returns current pricing configuration values")
     public ResponseEntity<PricingInfoResponse> getPricingInfo() {
@@ -56,10 +44,6 @@ public class PricingController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Gets the full pricing configuration with metadata.
-     * Employee only - for admin UI.
-     */
     @GetMapping("/config")
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "Get pricing config", description = "Returns full pricing configuration (Employee only)")
@@ -81,10 +65,6 @@ public class PricingController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Updates the pricing configuration.
-     * Employee only - creates a new active config and deactivates the old one.
-     */
     @PutMapping("/config")
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "Update pricing config", description = "Updates pricing configuration (Employee only)")

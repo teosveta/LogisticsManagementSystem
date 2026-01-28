@@ -16,19 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of CompanyService.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Only handles company business logic.
- *   Data mapping is delegated to EntityMapper, persistence to Repository.
- * - Open/Closed (OCP): New validation rules can be added without changing
- *   existing CRUD operations.
- * - Liskov Substitution (LSP): This implementation can be substituted
- *   anywhere CompanyService is used.
- * - Dependency Inversion (DIP): Depends on Repository interface, not
- *   concrete implementation.
- */
 @Service
 @Transactional
 public class CompanyServiceImpl implements CompanyService {
@@ -37,9 +24,6 @@ public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
 
-    /**
-     * Constructor injection following DIP - depends on abstractions.
-     */
     public CompanyServiceImpl(CompanyRepository companyRepository) {
         this.companyRepository = companyRepository;
     }
@@ -48,13 +32,11 @@ public class CompanyServiceImpl implements CompanyService {
     public CompanyResponse createCompany(CompanyRequest request) {
         logger.info("Creating company with registration number: {}", request.getRegistrationNumber());
 
-        // Check for duplicate registration number
         if (companyRepository.existsByRegistrationNumber(request.getRegistrationNumber())) {
             throw new DuplicateResourceException("Company", "registrationNumber",
                     request.getRegistrationNumber());
         }
 
-        // Convert DTO to Entity
         Company company = new Company();
         company.setName(request.getName());
         company.setRegistrationNumber(request.getRegistrationNumber());
@@ -62,7 +44,6 @@ public class CompanyServiceImpl implements CompanyService {
         company.setPhone(request.getPhone());
         company.setEmail(request.getEmail());
 
-        // Save and convert back to DTO
         Company savedCompany = companyRepository.save(company);
         logger.info("Company created with ID: {}", savedCompany.getId());
 
@@ -97,14 +78,12 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Company", "id", id));
 
-        // Check if new registration number conflicts with another company
         if (!company.getRegistrationNumber().equals(request.getRegistrationNumber()) &&
                 companyRepository.existsByRegistrationNumber(request.getRegistrationNumber())) {
             throw new DuplicateResourceException("Company", "registrationNumber",
                     request.getRegistrationNumber());
         }
 
-        // Update fields
         company.setName(request.getName());
         company.setRegistrationNumber(request.getRegistrationNumber());
         company.setAddress(request.getAddress());

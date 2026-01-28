@@ -5,16 +5,6 @@ import java.math.BigDecimal;
 /**
  * Service interface for shipment pricing calculations.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This interface has ONE responsibility - pricing.
- *   It doesn't handle shipment creation, validation, or persistence.
- * - Interface Segregation (ISP): Small, focused interface with only pricing methods.
- *   Clients only need to know about pricing, not other shipment operations.
- * - Dependency Inversion (DIP): ShipmentService depends on this interface, not on
- *   a concrete implementation. This allows swapping pricing strategies easily.
- * - Open/Closed (OCP): New pricing strategies (e.g., volume-based, member discounts)
- *   can be implemented without modifying existing code - just create a new implementation.
- *
  * All monetary values use BigDecimal for precision.
  */
 public interface PricingService {

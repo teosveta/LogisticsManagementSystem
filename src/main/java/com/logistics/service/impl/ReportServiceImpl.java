@@ -25,18 +25,6 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of ReportService.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This service ONLY generates reports.
- *   It reads data but never modifies it. CRUD operations are elsewhere.
- * - Open/Closed (OCP): New report types can be added without modifying
- *   existing report methods.
- * - Dependency Inversion (DIP): Depends on repository interfaces.
- *
- * All methods are read-only transactions for performance optimization.
- */
 @Service
 @Transactional(readOnly = true)
 public class ReportServiceImpl implements ReportService {
@@ -86,7 +74,6 @@ public class ReportServiceImpl implements ReportService {
     public List<ShipmentResponse> getShipmentsByEmployeeReport(Long employeeId) {
         logger.debug("Generating shipments report for employee ID: {}", employeeId);
 
-        // Validate employee exists
         if (!employeeRepository.existsById(employeeId)) {
             throw new ResourceNotFoundException("Employee", "id", employeeId);
         }
@@ -100,7 +87,6 @@ public class ReportServiceImpl implements ReportService {
     public List<ShipmentResponse> getPendingShipmentsReport() {
         logger.debug("Generating pending shipments report");
 
-        // Pending means NOT delivered (could be REGISTERED, IN_TRANSIT, or CANCELLED)
         return shipmentRepository.findAllPendingShipments().stream()
                 .map(EntityMapper::toShipmentResponse)
                 .collect(Collectors.toList());
@@ -110,7 +96,6 @@ public class ReportServiceImpl implements ReportService {
     public List<ShipmentResponse> getShipmentsSentByCustomerReport(Long customerId) {
         logger.debug("Generating sent shipments report for customer ID: {}", customerId);
 
-        // Validate customer exists
         if (!customerRepository.existsById(customerId)) {
             throw new ResourceNotFoundException("Customer", "id", customerId);
         }
@@ -124,7 +109,6 @@ public class ReportServiceImpl implements ReportService {
     public List<ShipmentResponse> getShipmentsReceivedByCustomerReport(Long customerId) {
         logger.debug("Generating received shipments report for customer ID: {}", customerId);
 
-        // Validate customer exists
         if (!customerRepository.existsById(customerId)) {
             throw new ResourceNotFoundException("Customer", "id", customerId);
         }
@@ -135,34 +119,20 @@ public class ReportServiceImpl implements ReportService {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * IMPORTANT: Only counts DELIVERED shipments as revenue.
-     * Cancelled or pending shipments do NOT count as revenue because:
-     * - Cancelled: No payment was completed
-     * - Pending: Payment hasn't been confirmed/completed
-     *
-     * Revenue = SUM(price) for all DELIVERED shipments in the date range.
+     * Only DELIVERED shipments count as revenue - cancelled/pending shipments haven't been paid for.
      */
     @Override
     public RevenueResponse getRevenueReport(LocalDate startDate, LocalDate endDate) {
         logger.info("Generating revenue report from {} to {}", startDate, endDate);
 
-        // Convert LocalDate to LocalDateTime for query
-        // Start of startDate (00:00:00.000)
         LocalDateTime startDateTime = startDate.atStartOfDay();
-        // End of endDate (23:59:59.999999999)
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
-        // Calculate total revenue (sum of prices for DELIVERED shipments)
         BigDecimal totalRevenue = shipmentRepository.calculateRevenueBetweenDates(startDateTime, endDateTime);
-
-        // If no delivered shipments, revenue is 0
         if (totalRevenue == null) {
             totalRevenue = BigDecimal.ZERO;
         }
 
-        // Count delivered shipments in the period
         long deliveredCount = shipmentRepository.findDeliveredShipmentsBetweenDates(startDateTime, endDateTime).size();
 
         logger.info("Revenue report: {} total from {} delivered shipments", totalRevenue, deliveredCount);
@@ -189,7 +159,6 @@ public class ReportServiceImpl implements ReportService {
     public CustomerMetricsResponse getCustomerMetrics(Long customerId) {
         logger.debug("Generating customer metrics for customer ID: {}", customerId);
 
-        // Validate customer exists
         if (!customerRepository.existsById(customerId)) {
             throw new ResourceNotFoundException("Customer", "id", customerId);
         }
@@ -197,11 +166,8 @@ public class ReportServiceImpl implements ReportService {
         long totalSent = shipmentRepository.countBySenderId(customerId);
         long totalReceived = shipmentRepository.countDeliveredByRecipientId(customerId);
 
-        // In-transit: shipments where customer is sender OR recipient and status is REGISTERED or IN_TRANSIT
         long inTransitSent = shipmentRepository.countInTransitBySenderId(customerId);
         long inTransitReceived = shipmentRepository.countInTransitByRecipientId(customerId);
-        // We need unique count, but for simplicity we'll just use sent + received
-        // (in practice, a customer is rarely both sender AND recipient of the same shipment)
         long inTransit = inTransitSent + inTransitReceived;
 
         BigDecimal totalSpent = shipmentRepository.calculateTotalSpentBySenderId(customerId);

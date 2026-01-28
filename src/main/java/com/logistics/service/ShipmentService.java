@@ -9,12 +9,6 @@ import java.util.List;
 
 /**
  * Service interface for Shipment operations.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles shipment business logic only.
- *   Pricing calculation is delegated to PricingService.
- * - Interface Segregation (ISP): Contains only shipment-related methods.
- * - Dependency Inversion (DIP): Controllers depend on this interface.
  */
 public interface ShipmentService {
 

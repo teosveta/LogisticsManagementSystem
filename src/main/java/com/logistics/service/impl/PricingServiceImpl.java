@@ -13,21 +13,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
- * Implementation of PricingService that loads configuration from the DATABASE.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This class ONLY handles pricing calculations.
- *   It doesn't persist data or validate shipments - those are other services' jobs.
- * - Open/Closed (OCP): Configuration is stored in database, so pricing
- *   can be changed without modifying code or redeploying.
- * - Dependency Inversion (DIP): Depends on PricingConfigRepository interface.
- *
- * Pricing Formula:
- * Total = Base Price + (Weight × Price per kg) + Delivery Type Fee
- *
- * Example calculations:
- * - 5kg to office:  5.00 + (5 × 2.00) + 0.00  = 15.00
- * - 5kg to address: 5.00 + (5 × 2.00) + 10.00 = 25.00
+ * Calculates shipment prices using database-stored configuration.
+ * Formula: BasePrice + (Weight × PricePerKg) + DeliveryFee (if address delivery)
  */
 @Service
 public class PricingServiceImpl implements PricingService {
@@ -41,44 +28,24 @@ public class PricingServiceImpl implements PricingService {
         logger.info("PricingService initialized - will load pricing from database");
     }
 
-    /**
-     * Gets the currently active pricing configuration from the database.
-     *
-     * @return the active pricing configuration
-     * @throws InvalidDataException if no active configuration exists
-     */
     private PricingConfig getActiveConfig() {
         return pricingConfigRepository.findByActiveTrue()
                 .orElseThrow(() -> new InvalidDataException(
                         "No active pricing configuration found. Please configure pricing in the database."));
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * Calculates total price using the formula:
-     * Total = Base Price + (Weight × Price per kg) + Delivery Type Fee
-     *
-     * Uses BigDecimal arithmetic with HALF_UP rounding for monetary precision.
-     */
     @Override
     @Transactional(readOnly = true)
     public BigDecimal calculatePrice(BigDecimal weight, boolean isOfficeDelivery) {
         PricingConfig config = getActiveConfig();
 
-        // Step 1: Start with base price
         BigDecimal total = config.getBasePrice();
+        total = total.add(weight.multiply(config.getPricePerKg()));
 
-        // Step 2: Add weight-based cost (weight × price per kg)
-        BigDecimal weightCost = weight.multiply(config.getPricePerKg());
-        total = total.add(weightCost);
-
-        // Step 3: Add delivery type fee (0 for office, addressDeliveryFee for address)
         if (!isOfficeDelivery) {
             total = total.add(config.getAddressDeliveryFee());
         }
 
-        // Round to 2 decimal places for currency
         total = total.setScale(2, RoundingMode.HALF_UP);
 
         logger.debug("Price calculated: weight={}, isOfficeDelivery={}, total={}",
@@ -105,33 +72,17 @@ public class PricingServiceImpl implements PricingService {
         return getActiveConfig().getAddressDeliveryFee();
     }
 
-    /**
-     * Gets the full active pricing configuration.
-     * Used by PricingController for the admin UI.
-     *
-     * @return the active pricing configuration
-     */
     @Transactional(readOnly = true)
     public PricingConfig getActivePricingConfig() {
         return getActiveConfig();
     }
 
-    /**
-     * Updates the pricing configuration.
-     * Deactivates the old config and creates a new active one.
-     *
-     * @param basePrice         new base price
-     * @param pricePerKg        new price per kg
-     * @param addressDeliveryFee new address delivery fee
-     * @return the new active pricing configuration
-     */
     @Transactional
     public PricingConfig updatePricingConfig(BigDecimal basePrice, BigDecimal pricePerKg,
                                               BigDecimal addressDeliveryFee) {
         logger.info("Updating pricing config: basePrice={}, pricePerKg={}, addressDeliveryFee={}",
                 basePrice, pricePerKg, addressDeliveryFee);
 
-        // Validate inputs
         if (basePrice == null || basePrice.compareTo(BigDecimal.ZERO) < 0) {
             throw new InvalidDataException("Base price must be non-negative");
         }
@@ -142,10 +93,8 @@ public class PricingServiceImpl implements PricingService {
             throw new InvalidDataException("Address delivery fee must be non-negative");
         }
 
-        // Deactivate all existing configs
         pricingConfigRepository.deactivateAll();
 
-        // Create new active config
         PricingConfig newConfig = new PricingConfig(basePrice, pricePerKg, addressDeliveryFee);
         PricingConfig saved = pricingConfigRepository.save(newConfig);
 

@@ -17,16 +17,6 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-/**
- * JWT Token Provider for generating and validating JWT tokens.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This class ONLY handles JWT token operations.
- *   It doesn't handle authentication logic - that's AuthService's job.
- * - Open/Closed (OCP): Token configuration comes from external properties,
- *   so behavior can be changed without modifying code.
- * - Dependency Inversion (DIP): Configuration values are injected.
- */
 @Component
 public class JwtTokenProvider {
 
@@ -35,30 +25,14 @@ public class JwtTokenProvider {
     private final SecretKey secretKey;
     private final long expirationMs;
 
-    /**
-     * Constructor that initializes JWT configuration from application.properties.
-     *
-     * @param jwtSecret     the secret key for signing tokens
-     * @param jwtExpiration token expiration time in milliseconds
-     */
     public JwtTokenProvider(
             @Value("${jwt.secret}") String jwtSecret,
             @Value("${jwt.expiration}") long jwtExpiration) {
-
-        // Create a secure key from the secret string
         this.secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
         this.expirationMs = jwtExpiration;
-
         logger.info("JwtTokenProvider initialized with expiration: {} ms", jwtExpiration);
     }
 
-    /**
-     * Generates a JWT token for a user.
-     *
-     * @param username the username to include in the token
-     * @param role     the user's role to include in the token
-     * @return the generated JWT token string
-     */
     public String generateToken(String username, Role role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMs);
@@ -76,12 +50,6 @@ public class JwtTokenProvider {
         return token;
     }
 
-    /**
-     * Extracts the username from a JWT token.
-     *
-     * @param token the JWT token
-     * @return the username stored in the token
-     */
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
@@ -92,12 +60,6 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
-    /**
-     * Extracts the role from a JWT token.
-     *
-     * @param token the JWT token
-     * @return the role stored in the token
-     */
     public Role getRoleFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
@@ -109,12 +71,6 @@ public class JwtTokenProvider {
         return Role.valueOf(roleName);
     }
 
-    /**
-     * Validates a JWT token.
-     *
-     * @param token the JWT token to validate
-     * @return true if the token is valid, false otherwise
-     */
     public boolean validateToken(String token) {
         try {
             Jwts.parser()

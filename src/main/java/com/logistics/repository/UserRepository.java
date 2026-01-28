@@ -11,13 +11,6 @@ import java.util.Optional;
 /**
  * Repository interface for User entity database operations.
  *
- * SOLID Principles Applied:
- * - Interface Segregation (ISP): This interface only contains methods relevant
- *   to User operations. It extends JpaRepository for standard CRUD operations
- *   and adds only user-specific query methods.
- * - Dependency Inversion (DIP): Services depend on this interface (abstraction),
- *   not on a concrete implementation. Spring Data JPA provides the implementation.
- *
  * Spring Data JPA automatically generates the implementation based on method names.
  */
 @Repository

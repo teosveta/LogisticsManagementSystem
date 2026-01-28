@@ -13,10 +13,6 @@ import java.util.Optional;
 /**
  * Repository interface for Employee entity database operations.
  *
- * SOLID Principles Applied:
- * - Interface Segregation (ISP): Contains only employee-specific query methods.
- * - Dependency Inversion (DIP): Services depend on this abstraction.
- *
  * Spring Data JPA provides the implementation automatically.
  */
 @Repository

@@ -14,16 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 
 /**
- * Custom UserDetailsService implementation for Spring Security.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Only loads user details for authentication.
- *   Doesn't handle user management - that's UserRepository/AuthService's job.
- * - Interface Segregation (ISP): Implements only UserDetailsService.
- * - Liskov Substitution (LSP): Can be used anywhere UserDetailsService is expected.
- * - Dependency Inversion (DIP): Depends on UserRepository abstraction.
- *
- * This service is used by Spring Security during authentication to load user details.
+ * Loads user details for Spring Security authentication.
  */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -36,13 +27,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Loads user details by username for Spring Security authentication.
-     *
-     * @param username the username to look up
-     * @return UserDetails object for Spring Security
-     * @throws UsernameNotFoundException if user is not found
-     */
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -54,8 +38,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                     return new UsernameNotFoundException("User not found: " + username);
                 });
 
-        // Convert our User entity to Spring Security's UserDetails
-        // The role is prefixed with "ROLE_" as per Spring Security convention
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),

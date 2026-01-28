@@ -14,12 +14,6 @@ import java.util.List;
 /**
  * Entity representing an employee of the logistics company.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This entity only manages employee data.
- *   Employee-related operations are handled in EmployeeService.
- * - Open/Closed (OCP): New employee types can be added to EmployeeType enum
- *   without modifying this class structure.
- *
  * An Employee:
  * - Has exactly one User account (1:1 relationship)
  * - Belongs to exactly one Company

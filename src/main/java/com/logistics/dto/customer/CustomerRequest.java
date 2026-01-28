@@ -6,9 +6,6 @@ import jakarta.validation.constraints.Size;
 
 /**
  * DTO for customer creation and update requests.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only customer data transfer for input.
  */
 public class CustomerRequest {
 

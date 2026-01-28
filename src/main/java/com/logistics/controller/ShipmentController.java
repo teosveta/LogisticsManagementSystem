@@ -22,18 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * REST Controller for shipment management.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only shipment-related HTTP endpoints.
- *   Does not contain business logic - delegates to ShipmentService.
- * - Dependency Inversion (DIP): Depends on service interfaces (ShipmentService,
- *   CustomerService), not on concrete implementations or repositories.
- *   This ensures proper layer separation and testability.
- *
- * Access Control:
- * - EMPLOYEE: Can view ALL shipments, create/edit/delete shipments, update status
- * - CUSTOMER: Can ONLY view shipments where they are sender OR recipient
+ * Employees can manage all shipments. Customers can only view their own.
  */
 @RestController
 @RequestMapping("/api/shipments")
@@ -51,10 +40,6 @@ public class ShipmentController {
         this.customerService = customerService;
     }
 
-    /**
-     * Registers a new shipment (Employee only).
-     * Price is calculated automatically based on weight and delivery type.
-     */
     @PostMapping
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "Register shipment", description = "Registers a new shipment (Employee only). Price calculated automatically.")
@@ -69,11 +54,6 @@ public class ShipmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * Gets a shipment by ID.
-     * Employees can view any shipment.
-     * Customers can only view shipments where they are sender or recipient.
-     */
     @GetMapping("/{id}")
     @Operation(summary = "Get shipment by ID", description = "Retrieves a shipment. Customers can only see their own shipments.")
     public ResponseEntity<ShipmentResponse> getShipmentById(
@@ -82,7 +62,6 @@ public class ShipmentController {
 
         ShipmentResponse shipment = shipmentService.getShipmentById(id);
 
-        // If customer, verify they have access to this shipment
         if (isCustomer(authentication)) {
             Long customerId = getCustomerIdFromAuth(authentication);
             if (!shipment.getSenderId().equals(customerId) &&
@@ -94,34 +73,22 @@ public class ShipmentController {
         return ResponseEntity.ok(shipment);
     }
 
-    /**
-     * Gets all shipments.
-     * Employees see ALL shipments.
-     * Customers see only their own (filtered by service).
-     */
     @GetMapping
     @Operation(summary = "Get all shipments", description = "Employees see all. Customers see only their own.")
     public ResponseEntity<List<ShipmentResponse>> getAllShipments(Authentication authentication) {
         logger.debug("Fetching shipments for user: {}", authentication.getName());
 
         List<ShipmentResponse> shipments;
-
         if (isCustomer(authentication)) {
-            // Customer: only their shipments
             Long customerId = getCustomerIdFromAuth(authentication);
             shipments = shipmentService.getShipmentsByCustomerId(customerId);
         } else {
-            // Employee: all shipments
             shipments = shipmentService.getAllShipments();
         }
 
         return ResponseEntity.ok(shipments);
     }
 
-    /**
-     * Updates shipment status (Employee only).
-     * Valid transitions: REGISTERED -> IN_TRANSIT -> DELIVERED (or CANCELLED)
-     */
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "Update shipment status", description = "Updates shipment status (Employee only)")
@@ -134,9 +101,6 @@ public class ShipmentController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Updates a shipment (Employee only).
-     */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "Update shipment", description = "Updates shipment details (Employee only)")
@@ -152,9 +116,6 @@ public class ShipmentController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Deletes a shipment (Employee only).
-     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "Delete shipment", description = "Deletes a shipment (Employee only)")
@@ -164,21 +125,10 @@ public class ShipmentController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Checks if the authenticated user is a customer.
-     */
     private boolean isCustomer(Authentication authentication) {
         return authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
     }
 
-    /**
-     * Gets the customer ID from the authenticated user.
-     * Uses CustomerService to maintain proper layer separation (DIP).
-     *
-     * @param authentication the current authentication context
-     * @return the customer ID for the authenticated user
-     * @throws UnauthorizedException if customer not found
-     */
     private Long getCustomerIdFromAuth(Authentication authentication) {
         String username = authentication.getName();
         try {

@@ -9,10 +9,6 @@ import jakarta.validation.constraints.Size;
 /**
  * DTO for user registration requests.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This DTO only handles registration data transfer.
- *   Validation is declarative via annotations; business logic is in AuthService.
- *
  * Contains all fields required to create a new user account.
  */
 public class RegisterRequest {

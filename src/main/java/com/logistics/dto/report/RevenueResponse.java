@@ -6,9 +6,6 @@ import java.time.LocalDate;
 /**
  * DTO for revenue report responses.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This DTO handles only revenue report data.
- *
  * Note: Revenue uses BigDecimal for monetary precision.
  * Only DELIVERED shipments are counted in revenue calculations.
  */

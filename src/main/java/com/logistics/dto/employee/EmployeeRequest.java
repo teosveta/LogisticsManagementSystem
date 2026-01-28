@@ -10,9 +10,6 @@ import java.time.LocalDate;
 /**
  * DTO for employee creation and update requests.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only employee data transfer for input.
- *
  * Note: Salary uses BigDecimal for monetary precision.
  */
 public class EmployeeRequest {

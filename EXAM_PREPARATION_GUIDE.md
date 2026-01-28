@@ -1,699 +1,1227 @@
 # ПОДГОТОВКА ЗА ИЗПИТ - Logistics Management System
-
-## СЪДЪРЖАНИЕ
-1. [Архитектура на проекта](#1-архитектура-на-проекта)
-2. [Контролери (Controllers)](#2-контролери-controllers)
-3. [Сървиси (Services)](#3-сървиси-services)
-4. [Хранилища (Repositories)](#4-хранилища-repositories)
-5. [DTO класове](#5-dto-класове)
-6. [Entity класове](#6-entity-класове)
-7. [Enum класове](#7-enum-класове)
-8. [Помощни класове (Utilities)](#8-помощни-класове-utilities)
-9. [Често задавани въпроси и отговори](#9-често-задавани-въпроси-и-отговори)
+## Пълно ръководство с подробни обяснения
 
 ---
 
-## 1. АРХИТЕКТУРА НА ПРОЕКТА
+# СЪДЪРЖАНИЕ
 
-### Слоеве на приложението (Layered Architecture)
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    CONTROLLER LAYER                          │
-│        (REST endpoints, валидация на заявки, auth)          │
-│   Файлове: src/main/java/com/logistics/controller/          │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│                     SERVICE LAYER                            │
-│        (Бизнес логика, валидации, транзакции)               │
-│   Файлове: src/main/java/com/logistics/service/             │
-│            src/main/java/com/logistics/service/impl/         │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    REPOSITORY LAYER                          │
-│        (Достъп до базата данни, заявки)                     │
-│   Файлове: src/main/java/com/logistics/repository/          │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│                      DATABASE                                │
-│        (Entity класове, релации)                            │
-│   Файлове: src/main/java/com/logistics/model/entity/        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Защо използвам слоеста архитектура?
-- **Разделение на отговорностите (Separation of Concerns)** - всеки слой има конкретна задача
-- **Лесна поддръжка** - промяна в един слой не засяга другите
-- **Тестируемост** - всеки слой може да се тества отделно
-- **SOLID принципи** - следва Single Responsibility Principle
+1. [Какво представлява проектът?](#1-какво-представлява-проектът)
+2. [Архитектура - Как е организиран кодът?](#2-архитектура---как-е-организиран-кодът)
+3. [Контролери (Controllers) - Входната точка](#3-контролери-controllers---входната-точка)
+4. [Сървиси (Services) - Бизнес логиката](#4-сървиси-services---бизнес-логиката)
+5. [Хранилища (Repositories) - Достъп до базата данни](#5-хранилища-repositories---достъп-до-базата-данни)
+6. [DTO класове - Пренос на данни](#6-dto-класове---пренос-на-данни)
+7. [Entity класове - Моделът на данните](#7-entity-класове---моделът-на-данните)
+8. [Enum класове - Фиксирани стойности](#8-enum-класове---фиксирани-стойности)
+9. [Помощни класове](#9-помощни-класове)
+10. [Сигурност и автентикация](#10-сигурност-и-автентикация)
+11. [Пълен списък с въпроси и отговори](#11-пълен-списък-с-въпроси-и-отговори)
+12. [Бързи справки](#12-бързи-справки)
 
 ---
 
-## 2. КОНТРОЛЕРИ (Controllers)
+# 1. КАКВО ПРЕДСТАВЛЯВА ПРОЕКТЪТ?
 
-**Местоположение:** `src/main/java/com/logistics/controller/`
+## 1.1 Описание с прости думи
 
-### 2.1 AuthController.java
-**Път:** `/api/auth`
-**Предназначение:** Автентикация и регистрация на потребители
+Това е **система за управление на куриерска фирма** (като Еконт или Спиди).
 
-| Endpoint | Метод | Описание | Достъп |
-|----------|-------|----------|--------|
-| `/api/auth/register` | POST | Регистрация на нов потребител | Публичен |
-| `/api/auth/login` | POST | Вход и получаване на JWT токен | Публичен |
+**Какво може да прави системата:**
+- Служители регистрират пратки от клиенти
+- Проследява се статуса на пратките (регистрирана → в транзит → доставена)
+- Автоматично се калкулира цена на база тегло и тип доставка
+- Генерират се справки за приходи, пратки, клиенти
 
-**Ключови методи:**
+## 1.2 Два типа потребители
+
+| Тип | Какво може да прави | Аналогия |
+|-----|---------------------|----------|
+| **EMPLOYEE** | Всичко - регистрира пратки, управлява клиенти, вижда справки | Служител на гише в Еконт |
+| **CUSTOMER** | Само вижда СВОИТЕ пратки (където е подател или получател) | Клиент, който проверява пратката си онлайн |
+
+## 1.3 Основни понятия
+
+| Понятие | Какво означава | Пример |
+|---------|----------------|--------|
+| **Company** | Компания (куриерска фирма) | "Еконт ЕООД" |
+| **Office** | Офис на компанията | "Офис София Център, ул. Витоша 15" |
+| **Employee** | Служител | "Иван Иванов - куриер" |
+| **Customer** | Клиент | "Мария Петрова" |
+| **Shipment** | Пратка | "Колет 5кг от София до Пловдив" |
+
+---
+
+# 2. АРХИТЕКТУРА - КАК Е ОРГАНИЗИРАН КОДЪТ?
+
+## 2.1 Какво е "слоеста архитектура"?
+
+Представи си **ресторант**:
+1. **Клиентът** (Frontend) поръчва на сервитьора
+2. **Сервитьорът** (Controller) приема поръчката и я предава на кухнята
+3. **Готвачът** (Service) приготвя храната по рецепта
+4. **Хладилникът** (Repository) съхранява продуктите
+5. **Продуктите** (Entity) са самите съставки
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         КЛИЕНТ (Browser/App)                        │
+│                    Изпраща заявки, получава отговори                │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓ HTTP заявка
+┌─────────────────────────────────────────────────────────────────────┐
+│                      CONTROLLER (Сервитьор)                         │
+│                                                                     │
+│  • Приема заявките от клиента                                       │
+│  • Проверява дали клиентът има право на достъп                      │
+│  • Извиква подходящия Service                                       │
+│  • Връща отговор на клиента                                         │
+│                                                                     │
+│  Папка: src/main/java/com/logistics/controller/                     │
+│  Файлове: AuthController, ShipmentController, CompanyController...  │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓ извиква метод
+┌─────────────────────────────────────────────────────────────────────┐
+│                       SERVICE (Готвач)                              │
+│                                                                     │
+│  • Съдържа БИЗНЕС ЛОГИКАТА (правилата)                              │
+│  • Валидира данните                                                 │
+│  • Калкулира цени                                                   │
+│  • Координира операциите                                            │
+│                                                                     │
+│  Папка: src/main/java/com/logistics/service/                        │
+│         src/main/java/com/logistics/service/impl/                   │
+│  Файлове: ShipmentService, PricingService, AuthService...           │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓ извиква метод
+┌─────────────────────────────────────────────────────────────────────┐
+│                     REPOSITORY (Хладилник)                          │
+│                                                                     │
+│  • Комуникира с базата данни                                        │
+│  • Записва, чете, обновява, изтрива данни                           │
+│  • Изпълнява SQL заявки                                             │
+│                                                                     │
+│  Папка: src/main/java/com/logistics/repository/                     │
+│  Файлове: ShipmentRepository, UserRepository, CustomerRepository... │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓ SQL заявка
+┌─────────────────────────────────────────────────────────────────────┐
+│                       DATABASE (База данни)                         │
+│                                                                     │
+│  • Съхранява всички данни                                           │
+│  • Таблици: users, shipments, customers, offices, companies...      │
+│                                                                     │
+│  Entity класове: src/main/java/com/logistics/model/entity/          │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+## 2.2 Защо използвам тази архитектура?
+
+**Аналогия с ресторанта:**
+- Ако готвачът се разболее, наемаме нов готвач - сервитьорът не се променя
+- Ако сменим хладилника, готвачът продължава да готви по същия начин
+- Всеки знае какво прави и не се меси в работата на другите
+
+**В програмирането:**
+1. **Разделение на отговорностите** - всеки клас има ЕДНА задача
+2. **Лесна поддръжка** - промяна в един слой не чупи другите
+3. **Лесно тестване** - можем да тестваме всеки слой отделно
+4. **Преизползваемост** - един Service може да се извиква от много Controllers
+
+## 2.3 Пълна структура на папките
+
+```
+src/main/java/com/logistics/
+├── controller/          ← REST endpoints (8 файла)
+│   ├── AuthController.java
+│   ├── CompanyController.java
+│   ├── CustomerController.java
+│   ├── EmployeeController.java
+│   ├── OfficeController.java
+│   ├── PricingController.java
+│   ├── ReportController.java
+│   └── ShipmentController.java
+│
+├── service/             ← Интерфейси (8 файла)
+│   ├── AuthService.java
+│   ├── CompanyService.java
+│   ├── CustomerService.java
+│   ├── EmployeeService.java
+│   ├── OfficeService.java
+│   ├── PricingService.java
+│   ├── ReportService.java
+│   └── ShipmentService.java
+│
+├── service/impl/        ← Имплементации (8 файла)
+│   ├── AuthServiceImpl.java
+│   ├── CompanyServiceImpl.java
+│   ├── CustomerServiceImpl.java
+│   ├── EmployeeServiceImpl.java
+│   ├── OfficeServiceImpl.java
+│   ├── PricingServiceImpl.java
+│   ├── ReportServiceImpl.java
+│   └── ShipmentServiceImpl.java
+│
+├── repository/          ← Достъп до БД (7 файла)
+│   ├── UserRepository.java
+│   ├── CompanyRepository.java
+│   ├── OfficeRepository.java
+│   ├── EmployeeRepository.java
+│   ├── CustomerRepository.java
+│   ├── ShipmentRepository.java
+│   └── PricingConfigRepository.java
+│
+├── dto/                 ← Data Transfer Objects (15+ файла)
+│   ├── auth/
+│   ├── company/
+│   ├── customer/
+│   ├── employee/
+│   ├── office/
+│   ├── pricing/
+│   ├── report/
+│   └── shipment/
+│
+├── model/
+│   ├── entity/          ← Модели за БД (7 файла)
+│   │   ├── User.java
+│   │   ├── Company.java
+│   │   ├── Office.java
+│   │   ├── Employee.java
+│   │   ├── Customer.java
+│   │   ├── Shipment.java
+│   │   └── PricingConfig.java
+│   │
+│   └── enums/           ← Изброени типове (3 файла)
+│       ├── Role.java
+│       ├── EmployeeType.java
+│       └── ShipmentStatus.java
+│
+└── util/                ← Помощни класове (1 файл)
+    └── EntityMapper.java
+```
+
+---
+
+# 3. КОНТРОЛЕРИ (Controllers) - ВХОДНАТА ТОЧКА
+
+## 3.1 Какво е Controller?
+
+**Controller** е като **рецепционист в хотел**:
+- Посреща "гостите" (HTTP заявките)
+- Проверява дали имат резервация (автентикация)
+- Насочва ги към правилната стая (Service)
+- Връща им отговор
+
+**Технически:** Controller е клас, който дефинира **REST endpoints** - URL адресите, на които приложението отговаря.
+
+## 3.2 Как изглежда един Controller?
+
 ```java
-@PostMapping("/register")
-public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request)
+@RestController                              // Казва на Spring: "Това е REST контролер"
+@RequestMapping("/api/companies")            // Базов път: всички URL-и започват с /api/companies
+@PreAuthorize("hasRole('EMPLOYEE')")         // СИГУРНОСТ: само EMPLOYEE има достъп
+public class CompanyController {
 
-@PostMapping("/login")
-public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request)
-```
+    private final CompanyService companyService;  // Инжектиран Service
 
-**Защо няма @PreAuthorize?** - Тези endpoints са публични, защото потребителят трябва да може да се регистрира и влезе без токен.
+    // Конструктор - Spring автоматично подава CompanyService
+    public CompanyController(CompanyService companyService) {
+        this.companyService = companyService;
+    }
 
----
+    // POST /api/companies - Създаване на компания
+    @PostMapping
+    public ResponseEntity<CompanyResponse> createCompany(
+            @Valid @RequestBody CompanyRequest request) {    // @Valid = валидирай данните
+        CompanyResponse response = companyService.createCompany(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
-### 2.2 CompanyController.java
-**Път:** `/api/companies`
-**Предназначение:** CRUD операции за компании
+    // GET /api/companies - Всички компании
+    @GetMapping
+    public ResponseEntity<List<CompanyResponse>> getAllCompanies() {
+        return ResponseEntity.ok(companyService.getAllCompanies());
+    }
 
-| Endpoint | Метод | Описание | Достъп |
-|----------|-------|----------|--------|
-| `/api/companies` | POST | Създаване на компания | EMPLOYEE |
-| `/api/companies` | GET | Всички компании | EMPLOYEE |
-| `/api/companies/{id}` | GET | Компания по ID | EMPLOYEE |
-| `/api/companies/{id}` | PUT | Обновяване | EMPLOYEE |
-| `/api/companies/{id}` | DELETE | Изтриване | EMPLOYEE |
+    // GET /api/companies/5 - Компания с ID=5
+    @GetMapping("/{id}")
+    public ResponseEntity<CompanyResponse> getCompanyById(@PathVariable Long id) {
+        return ResponseEntity.ok(companyService.getCompanyById(id));
+    }
 
-**Сигурност:**
-```java
-@PreAuthorize("hasRole('EMPLOYEE')")  // На ниво клас - важи за всички методи
-```
+    // PUT /api/companies/5 - Обновяване на компания с ID=5
+    @PutMapping("/{id}")
+    public ResponseEntity<CompanyResponse> updateCompany(
+            @PathVariable Long id,
+            @Valid @RequestBody CompanyRequest request) {
+        return ResponseEntity.ok(companyService.updateCompany(id, request));
+    }
 
----
-
-### 2.3 OfficeController.java
-**Път:** `/api/offices`
-**Предназначение:** CRUD операции за офиси
-
-| Endpoint | Метод | Описание | Достъп |
-|----------|-------|----------|--------|
-| `/api/offices` | POST | Създаване на офис | EMPLOYEE |
-| `/api/offices` | GET | Всички офиси | EMPLOYEE |
-| `/api/offices/{id}` | GET | Офис по ID | EMPLOYEE |
-| `/api/offices/company/{companyId}` | GET | Офиси по компания | EMPLOYEE |
-| `/api/offices/{id}` | PUT | Обновяване | EMPLOYEE |
-| `/api/offices/{id}` | DELETE | Изтриване | EMPLOYEE |
-
-**Важна заявка към БД:**
-```java
-// В OfficeRepository - използва се от getOfficesByCompanyId()
-List<Office> findByCompanyId(Long companyId);
-```
-
----
-
-### 2.4 EmployeeController.java
-**Път:** `/api/employees`
-**Предназначение:** CRUD операции за служители
-
-| Endpoint | Метод | Описание | Достъп |
-|----------|-------|----------|--------|
-| `/api/employees` | POST | Създаване на служител | EMPLOYEE |
-| `/api/employees` | GET | Всички служители | EMPLOYEE |
-| `/api/employees/{id}` | GET | Служител по ID | EMPLOYEE |
-| `/api/employees/{id}` | PUT | Обновяване | EMPLOYEE |
-| `/api/employees/{id}` | DELETE | Изтриване | EMPLOYEE |
-
----
-
-### 2.5 CustomerController.java
-**Път:** `/api/customers`
-**Предназначение:** CRUD операции за клиенти
-
-| Endpoint | Метод | Описание | Достъп |
-|----------|-------|----------|--------|
-| `/api/customers` | POST | Създаване на клиент | EMPLOYEE |
-| `/api/customers` | GET | Всички клиенти | EMPLOYEE |
-| `/api/customers/{id}` | GET | Клиент по ID | EMPLOYEE |
-| `/api/customers/user/{userId}` | GET | Клиент по User ID | EMPLOYEE или CUSTOMER |
-| `/api/customers/{id}` | PUT | Обновяване | EMPLOYEE |
-| `/api/customers/{id}` | DELETE | Изтриване | EMPLOYEE |
-
-**Смесен достъп:**
-```java
-@PreAuthorize("hasRole('CUSTOMER') or hasRole('EMPLOYEE')")
-public ResponseEntity<CustomerResponse> getCustomerByUserId(@PathVariable Long userId)
-```
-
----
-
-### 2.6 ShipmentController.java (НАЙ-ВАЖЕН)
-**Път:** `/api/shipments`
-**Предназначение:** Управление на пратки
-
-| Endpoint | Метод | Описание | Достъп |
-|----------|-------|----------|--------|
-| `/api/shipments` | POST | Регистриране на пратка | EMPLOYEE |
-| `/api/shipments` | GET | Всички пратки / Моите пратки | EMPLOYEE / CUSTOMER |
-| `/api/shipments/{id}` | GET | Пратка по ID | EMPLOYEE / CUSTOMER (само свои) |
-| `/api/shipments/{id}/status` | PATCH | Промяна на статус | EMPLOYEE |
-| `/api/shipments/{id}` | PUT | Обновяване | EMPLOYEE |
-| `/api/shipments/{id}` | DELETE | Изтриване | EMPLOYEE |
-
-**Контрол на достъпа за CUSTOMER:**
-```java
-// В метода getShipmentById():
-if (isCustomer(authentication)) {
-    Long customerId = getCustomerIdFromAuth(authentication);
-    // Клиентът вижда само пратки, където е подател ИЛИ получател
-    if (!shipment.getSenderId().equals(customerId) &&
-        !shipment.getRecipientId().equals(customerId)) {
-        throw new UnauthorizedException("You can only view your own shipments");
+    // DELETE /api/companies/5 - Изтриване на компания с ID=5
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCompany(@PathVariable Long id) {
+        companyService.deleteCompany(id);
+        return ResponseEntity.noContent().build();
     }
 }
 ```
 
-**Помощни методи:**
-```java
-private boolean isCustomer(Authentication auth) {
-    return auth.getAuthorities().stream()
-        .anyMatch(a -> a.getAuthority().equals("ROLE_CUSTOMER"));
-}
+## 3.3 Обяснение на анотациите
 
-private Long getCustomerIdFromAuth(Authentication auth) {
-    String username = auth.getName();
-    return customerService.getCustomerIdByUsername(username);
+| Анотация | Какво прави | Пример |
+|----------|-------------|--------|
+| `@RestController` | Казва на Spring, че това е REST контролер | На класа |
+| `@RequestMapping("/api/xxx")` | Базов URL път | `/api/companies` |
+| `@GetMapping` | HTTP GET заявка (четене) | Взимане на данни |
+| `@PostMapping` | HTTP POST заявка (създаване) | Създаване на нов запис |
+| `@PutMapping` | HTTP PUT заявка (обновяване) | Редактиране на съществуващ |
+| `@DeleteMapping` | HTTP DELETE заявка (изтриване) | Изтриване на запис |
+| `@PathVariable` | Взима стойност от URL | `/api/companies/{id}` → id=5 |
+| `@RequestBody` | Взима данни от тялото на заявката | JSON обект |
+| `@Valid` | Валидира данните преди обработка | Проверява анотациите в DTO |
+| `@PreAuthorize` | Проверява правата за достъп | `hasRole('EMPLOYEE')` |
+
+## 3.4 Всички контролери подробно
+
+### 3.4.1 AuthController.java
+**Път:** `/api/auth`
+**Предназначение:** Регистрация и вход в системата
+**Достъп:** Публичен (без автентикация)
+
+```java
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    // POST /api/auth/register - Регистрация на нов потребител
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        // 1. Валидира данните (username, email, password)
+        // 2. Проверява дали username/email вече съществуват
+        // 3. Криптира паролата
+        // 4. Създава User + Customer/Employee запис
+        // 5. Генерира JWT токен
+        // 6. Връща токена
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(authService.register(request));
+    }
+
+    // POST /api/auth/login - Вход в системата
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        // 1. Проверява username и password
+        // 2. Ако са верни - генерира JWT токен
+        // 3. Връща токена
+        return ResponseEntity.ok(authService.login(request));
+    }
+}
+```
+
+**Защо няма @PreAuthorize?**
+Защото потребителят трябва да може да се регистрира и влезе БЕЗ да има токен. Това е "входната врата" на системата.
+
+---
+
+### 3.4.2 ShipmentController.java (НАЙ-ВАЖЕН!)
+**Път:** `/api/shipments`
+**Предназначение:** Управление на пратки
+**Достъп:** Смесен (EMPLOYEE за всичко, CUSTOMER само за своите пратки)
+
+```java
+@RestController
+@RequestMapping("/api/shipments")
+public class ShipmentController {
+
+    // POST /api/shipments - Регистриране на нова пратка
+    // САМО EMPLOYEE може да регистрира пратки!
+    @PostMapping
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<ShipmentResponse> registerShipment(
+            @Valid @RequestBody ShipmentRequest request,
+            Authentication authentication) {     // Authentication = кой е влязъл
+
+        String employeeUsername = authentication.getName();
+        ShipmentResponse response = shipmentService.registerShipment(request, employeeUsername);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    // GET /api/shipments - Всички пратки (за EMPLOYEE) или само моите (за CUSTOMER)
+    @GetMapping
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('CUSTOMER')")
+    public ResponseEntity<List<ShipmentResponse>> getAllShipments(Authentication authentication) {
+
+        // Проверяваме дали е клиент
+        if (isCustomer(authentication)) {
+            // Клиентът вижда САМО своите пратки
+            Long customerId = getCustomerIdFromAuth(authentication);
+            return ResponseEntity.ok(shipmentService.getShipmentsByCustomerId(customerId));
+        }
+
+        // Служителят вижда ВСИЧКИ пратки
+        return ResponseEntity.ok(shipmentService.getAllShipments());
+    }
+
+    // GET /api/shipments/5 - Конкретна пратка
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('CUSTOMER')")
+    public ResponseEntity<ShipmentResponse> getShipmentById(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        ShipmentResponse shipment = shipmentService.getShipmentById(id);
+
+        // Ако е клиент - проверяваме дали пратката е негова
+        if (isCustomer(authentication)) {
+            Long customerId = getCustomerIdFromAuth(authentication);
+
+            // Клиентът може да види пратка само ако е подател ИЛИ получател
+            boolean isSender = shipment.getSenderId().equals(customerId);
+            boolean isRecipient = shipment.getRecipientId().equals(customerId);
+
+            if (!isSender && !isRecipient) {
+                throw new UnauthorizedException("Нямате достъп до тази пратка");
+            }
+        }
+
+        return ResponseEntity.ok(shipment);
+    }
+
+    // PATCH /api/shipments/5/status - Промяна на статус (само EMPLOYEE)
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<ShipmentResponse> updateStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody ShipmentStatusUpdateRequest request) {
+        return ResponseEntity.ok(shipmentService.updateShipmentStatus(id, request));
+    }
+
+    // Помощен метод: проверява дали е клиент
+    private boolean isCustomer(Authentication auth) {
+        return auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_CUSTOMER"));
+    }
+
+    // Помощен метод: взима ID на клиента от токена
+    private Long getCustomerIdFromAuth(Authentication auth) {
+        String username = auth.getName();
+        return customerService.getCustomerIdByUsername(username);
+    }
 }
 ```
 
 ---
 
-### 2.7 PricingController.java
+### 3.4.3 PricingController.java
 **Път:** `/api/pricing`
-**Предназначение:** Управление на ценообразуването
+**Предназначение:** Управление на цените
 
-| Endpoint | Метод | Описание | Достъп |
-|----------|-------|----------|--------|
-| `/api/pricing` | GET | Текущи цени | Всички автентикирани |
-| `/api/pricing/config` | GET | Пълна конфигурация | EMPLOYEE |
-| `/api/pricing/config` | PUT | Обновяване на цени | EMPLOYEE |
+```java
+@RestController
+@RequestMapping("/api/pricing")
+public class PricingController {
 
-**Къде се намират стойностите на цените?**
-- В базата данни, таблица `pricing_config`
-- Entity: `PricingConfig.java`
-- Полета: `basePrice`, `pricePerKg`, `addressDeliveryFee`
+    // GET /api/pricing - Текущите цени (за всички)
+    @GetMapping
+    @PreAuthorize("isAuthenticated()")  // Всеки влязъл потребител
+    public ResponseEntity<PricingInfoResponse> getPricingInfo() {
+        return ResponseEntity.ok(pricingService.getPricingInfo());
+    }
+
+    // GET /api/pricing/config - Пълна конфигурация (само EMPLOYEE)
+    @GetMapping("/config")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<PricingConfigResponse> getPricingConfig() {
+        return ResponseEntity.ok(pricingService.getActivePricingConfig());
+    }
+
+    // PUT /api/pricing/config - Обновяване на цените (само EMPLOYEE)
+    @PutMapping("/config")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<PricingConfigResponse> updatePricingConfig(
+            @Valid @RequestBody PricingConfigRequest request) {
+        return ResponseEntity.ok(pricingService.updatePricingConfig(request));
+    }
+}
+```
 
 ---
 
-### 2.8 ReportController.java
+### 3.4.4 ReportController.java
 **Път:** `/api/reports`
 **Предназначение:** Справки и отчети
 
-| Endpoint | Метод | Описание | Достъп |
-|----------|-------|----------|--------|
-| `/api/reports/employees` | GET | Всички служители | EMPLOYEE |
-| `/api/reports/customers` | GET | Всички клиенти | EMPLOYEE |
-| `/api/reports/shipments` | GET | Всички пратки | EMPLOYEE / CUSTOMER |
-| `/api/reports/shipments/employee/{id}` | GET | Пратки по служител | EMPLOYEE |
-| `/api/reports/shipments/pending` | GET | Чакащи пратки | EMPLOYEE |
-| `/api/reports/shipments/customer/{id}/sent` | GET | Изпратени от клиент | EMPLOYEE / CUSTOMER |
-| `/api/reports/shipments/customer/{id}/received` | GET | Получени от клиент | EMPLOYEE / CUSTOMER |
-| `/api/reports/revenue` | GET | Приходи за период | EMPLOYEE |
-| `/api/reports/dashboard` | GET | Dashboard метрики | EMPLOYEE |
-| `/api/reports/customer-metrics` | GET | Метрики за клиент | CUSTOMER |
-
----
-
-## 3. СЪРВИСИ (Services)
-
-**Местоположение:**
-- Интерфейси: `src/main/java/com/logistics/service/`
-- Имплементации: `src/main/java/com/logistics/service/impl/`
-
-### 3.1 AuthService / AuthServiceImpl
-
-**Интерфейс методи:**
 ```java
-AuthResponse register(RegisterRequest request);
-AuthResponse login(LoginRequest request);
-```
+@RestController
+@RequestMapping("/api/reports")
+public class ReportController {
 
-**Валидации в register():**
-```java
-// Проверка за дублиране на username
-if (userRepository.existsByUsername(request.getUsername())) {
-    throw new DuplicateResourceException("Username already exists");
+    // GET /api/reports/revenue?startDate=2024-01-01&endDate=2024-12-31
+    // Справка за приходи за период (само EMPLOYEE)
+    @GetMapping("/revenue")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<RevenueResponse> getRevenueReport(
+            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
+        return ResponseEntity.ok(reportService.getRevenueReport(startDate, endDate));
+    }
+
+    // GET /api/reports/dashboard - Метрики за dashboard (само EMPLOYEE)
+    @GetMapping("/dashboard")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<DashboardMetricsResponse> getDashboardMetrics() {
+        return ResponseEntity.ok(reportService.getDashboardMetrics());
+    }
+
+    // GET /api/reports/customer-metrics - Метрики за клиент (само своите)
+    @GetMapping("/customer-metrics")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<CustomerMetricsResponse> getCustomerMetrics(
+            Authentication authentication) {
+        Long customerId = getCustomerIdFromAuth(authentication);
+        return ResponseEntity.ok(reportService.getCustomerMetrics(customerId));
+    }
 }
-
-// Проверка за дублиране на email
-if (userRepository.existsByEmail(request.getEmail())) {
-    throw new DuplicateResourceException("Email already exists");
-}
-```
-
-**Логика за създаване на потребител:**
-```java
-// 1. Криптиране на паролата
-user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-// 2. Запис на User
-User savedUser = userRepository.save(user);
-
-// 3. Създаване на съответния запис (Customer или Employee)
-if (request.getRole() == Role.CUSTOMER) {
-    Customer customer = new Customer();
-    customer.setUser(savedUser);
-    customerRepository.save(customer);
-} else {
-    Employee employee = new Employee();
-    employee.setUser(savedUser);
-    employee.setHireDate(LocalDate.now());
-    employeeRepository.save(employee);
-}
-
-// 4. Генериране на JWT токен
-String token = jwtTokenProvider.generateToken(savedUser);
 ```
 
 ---
 
-### 3.2 ShipmentService / ShipmentServiceImpl (НАЙ-ВАЖЕН)
+## 3.5 Таблица с всички endpoints
 
-**Интерфейс методи:**
-```java
-ShipmentResponse registerShipment(ShipmentRequest request, String employeeUsername);
-ShipmentResponse getShipmentById(Long id);
-List<ShipmentResponse> getAllShipments();
-List<ShipmentResponse> getShipmentsByCustomerId(Long customerId);
-ShipmentResponse updateShipmentStatus(Long id, ShipmentStatusUpdateRequest request);
-ShipmentResponse updateShipment(Long id, ShipmentRequest request, String employeeUsername);
-void deleteShipment(Long id);
-List<ShipmentResponse> getShipmentsByStatus(ShipmentStatus status);
+| Controller | Endpoint | Метод | Описание | Достъп |
+|------------|----------|-------|----------|--------|
+| **Auth** | `/api/auth/register` | POST | Регистрация | Публичен |
+| | `/api/auth/login` | POST | Вход | Публичен |
+| **Company** | `/api/companies` | POST | Създай компания | EMPLOYEE |
+| | `/api/companies` | GET | Всички компании | EMPLOYEE |
+| | `/api/companies/{id}` | GET | Компания по ID | EMPLOYEE |
+| | `/api/companies/{id}` | PUT | Обнови компания | EMPLOYEE |
+| | `/api/companies/{id}` | DELETE | Изтрий компания | EMPLOYEE |
+| **Office** | `/api/offices` | POST | Създай офис | EMPLOYEE |
+| | `/api/offices` | GET | Всички офиси | EMPLOYEE |
+| | `/api/offices/{id}` | GET | Офис по ID | EMPLOYEE |
+| | `/api/offices/company/{id}` | GET | Офиси на компания | EMPLOYEE |
+| | `/api/offices/{id}` | PUT | Обнови офис | EMPLOYEE |
+| | `/api/offices/{id}` | DELETE | Изтрий офис | EMPLOYEE |
+| **Employee** | `/api/employees` | POST | Създай служител | EMPLOYEE |
+| | `/api/employees` | GET | Всички служители | EMPLOYEE |
+| | `/api/employees/{id}` | GET | Служител по ID | EMPLOYEE |
+| | `/api/employees/{id}` | PUT | Обнови служител | EMPLOYEE |
+| | `/api/employees/{id}` | DELETE | Изтрий служител | EMPLOYEE |
+| **Customer** | `/api/customers` | POST | Създай клиент | EMPLOYEE |
+| | `/api/customers` | GET | Всички клиенти | EMPLOYEE |
+| | `/api/customers/{id}` | GET | Клиент по ID | EMPLOYEE |
+| | `/api/customers/user/{id}` | GET | Клиент по User ID | EMPLOYEE/CUSTOMER |
+| | `/api/customers/{id}` | PUT | Обнови клиент | EMPLOYEE |
+| | `/api/customers/{id}` | DELETE | Изтрий клиент | EMPLOYEE |
+| **Shipment** | `/api/shipments` | POST | Регистрирай пратка | EMPLOYEE |
+| | `/api/shipments` | GET | Всички/Мои пратки | EMPLOYEE/CUSTOMER |
+| | `/api/shipments/{id}` | GET | Пратка по ID | EMPLOYEE/CUSTOMER* |
+| | `/api/shipments/{id}/status` | PATCH | Промени статус | EMPLOYEE |
+| | `/api/shipments/{id}` | PUT | Обнови пратка | EMPLOYEE |
+| | `/api/shipments/{id}` | DELETE | Изтрий пратка | EMPLOYEE |
+| **Pricing** | `/api/pricing` | GET | Текущи цени | Всички влезли |
+| | `/api/pricing/config` | GET | Конфигурация | EMPLOYEE |
+| | `/api/pricing/config` | PUT | Обнови цени | EMPLOYEE |
+| **Report** | `/api/reports/employees` | GET | Всички служители | EMPLOYEE |
+| | `/api/reports/customers` | GET | Всички клиенти | EMPLOYEE |
+| | `/api/reports/shipments` | GET | Всички пратки | EMPLOYEE/CUSTOMER |
+| | `/api/reports/revenue` | GET | Приходи | EMPLOYEE |
+| | `/api/reports/dashboard` | GET | Dashboard | EMPLOYEE |
+| | `/api/reports/customer-metrics` | GET | Клиентски метрики | CUSTOMER |
+
+*CUSTOMER може да вижда само пратки, където е подател или получател
+
+---
+
+# 4. СЪРВИСИ (Services) - БИЗНЕС ЛОГИКАТА
+
+## 4.1 Какво е Service?
+
+**Service** е като **готвач в ресторант**:
+- Знае рецептите (бизнес правилата)
+- Приготвя храната (обработва данните)
+- Не знае откъде идват продуктите (не се интересува от Controller)
+- Не знае как работи хладилникът (не знае SQL)
+
+**Технически:** Service съдържа цялата **бизнес логика** - правилата на приложението.
+
+## 4.2 Защо има интерфейс И имплементация?
+
+```
+ShipmentService (интерфейс)     →    ShipmentServiceImpl (имплементация)
+       ↑                                        ↑
+   "Какво прави"                           "Как го прави"
 ```
 
-#### ВАЛИДАЦИЯ НА ДЕСТИНАЦИЯ
-**Местоположение:** `ShipmentServiceImpl.validateDeliveryDestination()`
+**Аналогия:**
+- **Интерфейс** = Меню в ресторанта (какво можеш да поръчаш)
+- **Имплементация** = Рецептата (как се приготвя)
+
+**Защо е полезно:**
+1. Можем да сменим имплементацията без да променяме кода, който я използва
+2. Лесно тестване с mock обекти
+3. Следва SOLID принципа **Dependency Inversion**
+
+## 4.3 ShipmentServiceImpl - Подробно обяснение
+
+Това е НАЙ-ВАЖНИЯТ service, защото съдържа цялата логика за пратки.
+
+### Метод: registerShipment() - Регистриране на пратка
+
 ```java
+@Service
+@Transactional  // Всичко в един метод е една транзакция
+public class ShipmentServiceImpl implements ShipmentService {
+
+    @Override
+    public ShipmentResponse registerShipment(ShipmentRequest request, String employeeUsername) {
+
+        // ════════════════════════════════════════════════════════════════
+        // СТЪПКА 1: ВАЛИДАЦИЯ НА ВХОДНИТЕ ДАННИ
+        // ════════════════════════════════════════════════════════════════
+
+        // Проверка: трябва да има ИЛИ адрес, ИЛИ офис за доставка (не и двете)
+        validateDeliveryDestination(request);
+
+        // Проверка: теглото трябва да е между 0.01 и 10000 кг
+        validateWeight(request.getWeight());
+
+        // ════════════════════════════════════════════════════════════════
+        // СТЪПКА 2: НАМИРАНЕ НА СВЪРЗАНИТЕ ОБЕКТИ
+        // ════════════════════════════════════════════════════════════════
+
+        // Намери подателя (sender)
+        Customer sender = customerRepository.findById(request.getSenderId())
+            .orElseThrow(() -> new ResourceNotFoundException("Подателят не е намерен"));
+
+        // Намери получателя (recipient)
+        Customer recipient = customerRepository.findById(request.getRecipientId())
+            .orElseThrow(() -> new ResourceNotFoundException("Получателят не е намерен"));
+
+        // Намери служителя, който регистрира пратката
+        Employee employee = employeeRepository.findByUsername(employeeUsername)
+            .orElseThrow(() -> new ResourceNotFoundException("Служителят не е намерен"));
+
+        // ════════════════════════════════════════════════════════════════
+        // СТЪПКА 3: СЪЗДАВАНЕ НА ПРАТКАТА
+        // ════════════════════════════════════════════════════════════════
+
+        Shipment shipment = new Shipment();
+        shipment.setSender(sender);
+        shipment.setRecipient(recipient);
+        shipment.setRegisteredBy(employee);
+        shipment.setWeight(request.getWeight());
+        shipment.setStatus(ShipmentStatus.REGISTERED);  // Начален статус
+
+        // Задаване на офис на произход (от служителя)
+        if (employee.getOffice() != null) {
+            shipment.setOriginOffice(employee.getOffice());
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // СТЪПКА 4: ЗАДАВАНЕ НА ДЕСТИНАЦИЯ
+        // ════════════════════════════════════════════════════════════════
+
+        boolean isOfficeDelivery = false;
+
+        if (request.isOfficeDelivery()) {
+            // Доставка до офис
+            Office deliveryOffice = officeRepository.findById(request.getDeliveryOfficeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Офисът не е намерен"));
+            shipment.setDeliveryOffice(deliveryOffice);
+            isOfficeDelivery = true;
+        } else {
+            // Доставка до адрес
+            shipment.setDeliveryAddress(request.getDeliveryAddress());
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // СТЪПКА 5: КАЛКУЛИРАНЕ НА ЦЕНАТА
+        // ════════════════════════════════════════════════════════════════
+
+        // Делегираме на PricingService (Dependency Inversion!)
+        BigDecimal price = pricingService.calculatePrice(request.getWeight(), isOfficeDelivery);
+        shipment.setPrice(price);
+
+        // ════════════════════════════════════════════════════════════════
+        // СТЪПКА 6: ЗАПИС В БАЗАТА ДАННИ
+        // ════════════════════════════════════════════════════════════════
+
+        Shipment savedShipment = shipmentRepository.save(shipment);
+
+        // ════════════════════════════════════════════════════════════════
+        // СТЪПКА 7: КОНВЕРТИРАНЕ КЪМ DTO И ВРЪЩАНЕ
+        // ════════════════════════════════════════════════════════════════
+
+        return EntityMapper.toShipmentResponse(savedShipment);
+    }
+}
+```
+
+### Валидация на дестинация
+
+```java
+/**
+ * Проверява, че е зададена ТОЧНО ЕДНА дестинация:
+ * - ИЛИ адрес за доставка
+ * - ИЛИ офис за доставка
+ * - НЕ и двете едновременно
+ * - НЕ нито едното
+ */
 private void validateDeliveryDestination(ShipmentRequest request) {
-    boolean hasAddress = request.isAddressDelivery();
-    boolean hasOffice = request.isOfficeDelivery();
+    boolean hasAddress = request.isAddressDelivery();  // deliveryAddress != null
+    boolean hasOffice = request.isOfficeDelivery();    // deliveryOfficeId != null
 
-    // Трябва да има ИЛИ адрес, ИЛИ офис
     if (!hasAddress && !hasOffice) {
-        throw new InvalidDataException("Either deliveryAddress or deliveryOfficeId must be provided");
+        // Няма нито адрес, нито офис
+        throw new InvalidDataException(
+            "Трябва да посочите или адрес за доставка, или офис за доставка");
     }
 
-    // НЕ може да има И двете
     if (hasAddress && hasOffice) {
-        throw new InvalidDataException("Cannot specify both deliveryAddress and deliveryOfficeId");
+        // Има И адрес, И офис - не може
+        throw new InvalidDataException(
+            "Не можете да посочите едновременно адрес и офис за доставка");
     }
 }
 ```
 
-#### ВАЛИДАЦИЯ НА ТЕГЛО
-**Местоположение:** `ShipmentServiceImpl.validateWeight()`
+### Валидация на тегло
+
 ```java
+/**
+ * Проверява, че теглото е в допустимите граници:
+ * - Минимум: 0.01 кг
+ * - Максимум: 10000 кг
+ */
 private void validateWeight(BigDecimal weight) {
     if (weight == null) {
-        throw new InvalidDataException("Weight is required");
+        throw new InvalidDataException("Теглото е задължително");
     }
 
+    // Сравнение с BigDecimal се прави с compareTo, НЕ с < или >
     if (weight.compareTo(BigDecimal.ZERO) <= 0) {
-        throw new InvalidDataException("Weight must be greater than 0");
+        throw new InvalidDataException("Теглото трябва да е по-голямо от 0");
     }
 
     BigDecimal maxWeight = new BigDecimal("10000.00");
     if (weight.compareTo(maxWeight) > 0) {
-        throw new InvalidDataException("Weight cannot exceed 10000 kg");
+        throw new InvalidDataException("Теглото не може да надвишава 10000 кг");
     }
 }
 ```
 
-#### ВАЛИДАЦИЯ НА СТАТУС ПРЕХОДИ
-**Местоположение:** `ShipmentServiceImpl.validateStatusTransition()`
+### Валидация на преходи между статуси
+
 ```java
+/**
+ * Проверява дали преходът от един статус към друг е валиден.
+ *
+ * Валидни преходи:
+ *   REGISTERED → IN_TRANSIT (пратката тръгва)
+ *   REGISTERED → CANCELLED (пратката се отказва преди изпращане)
+ *   IN_TRANSIT → DELIVERED (пратката е доставена)
+ *   IN_TRANSIT → CANCELLED (пратката се отказва по време на доставка)
+ *
+ * Невалидни преходи:
+ *   DELIVERED → (нищо) - финален статус
+ *   CANCELLED → (нищо) - финален статус
+ */
 private void validateStatusTransition(ShipmentStatus currentStatus, ShipmentStatus newStatus) {
+
     // Финални статуси - не могат да се променят
-    if (currentStatus == ShipmentStatus.DELIVERED || currentStatus == ShipmentStatus.CANCELLED) {
+    if (currentStatus == ShipmentStatus.DELIVERED) {
         throw new InvalidStatusTransitionException(
-            "Cannot change status of " + currentStatus + " shipment");
+            "Доставената пратка не може да променя статуса си");
     }
 
-    // REGISTERED може да отиде към IN_TRANSIT или CANCELLED
+    if (currentStatus == ShipmentStatus.CANCELLED) {
+        throw new InvalidStatusTransitionException(
+            "Отказаната пратка не може да променя статуса си");
+    }
+
+    // От REGISTERED може да отиде само към IN_TRANSIT или CANCELLED
     if (currentStatus == ShipmentStatus.REGISTERED) {
         if (newStatus != ShipmentStatus.IN_TRANSIT && newStatus != ShipmentStatus.CANCELLED) {
             throw new InvalidStatusTransitionException(
-                "REGISTERED can only transition to IN_TRANSIT or CANCELLED");
+                "Регистрирана пратка може да премине само към 'В транзит' или 'Отказана'");
         }
     }
 
-    // IN_TRANSIT може да отиде към DELIVERED или CANCELLED
+    // От IN_TRANSIT може да отиде само към DELIVERED или CANCELLED
     if (currentStatus == ShipmentStatus.IN_TRANSIT) {
         if (newStatus != ShipmentStatus.DELIVERED && newStatus != ShipmentStatus.CANCELLED) {
             throw new InvalidStatusTransitionException(
-                "IN_TRANSIT can only transition to DELIVERED or CANCELLED");
+                "Пратка в транзит може да премине само към 'Доставена' или 'Отказана'");
         }
     }
 }
 ```
 
-**Диаграма на преходите:**
+**Диаграма на статусите:**
 ```
-REGISTERED ───────→ IN_TRANSIT ───────→ DELIVERED (край)
-     │                    │
-     └────→ CANCELLED ←───┘
-              (край)
+                    ┌─────────────┐
+                    │ REGISTERED  │  (Начален статус)
+                    │ (Регистрирана)│
+                    └──────┬──────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+              ▼            │            ▼
+      ┌───────────┐        │    ┌───────────┐
+      │IN_TRANSIT │        │    │ CANCELLED │
+      │(В транзит)│        │    │ (Отказана)│
+      └─────┬─────┘        │    └───────────┘
+            │              │          ▲
+            │              └──────────┘
+            │
+    ┌───────┼───────┐
+    │               │
+    ▼               ▼
+┌───────────┐ ┌───────────┐
+│ DELIVERED │ │ CANCELLED │
+│(Доставена)│ │ (Отказана)│
+└───────────┘ └───────────┘
+ (Финален)     (Финален)
 ```
 
 ---
 
-### 3.3 PricingService / PricingServiceImpl
+## 4.4 PricingServiceImpl - Калкулиране на цени
 
-**Интерфейс методи:**
+### Формула за изчисляване
+
 ```java
-BigDecimal calculatePrice(BigDecimal weight, boolean isOfficeDelivery);
-BigDecimal getBasePrice();
-BigDecimal getPricePerKg();
-BigDecimal getAddressDeliveryFee();
-PricingConfigResponse getActivePricingConfig();
-PricingConfigResponse updatePricingConfig(PricingConfigRequest request);
-```
+@Service
+public class PricingServiceImpl implements PricingService {
 
-#### ФОРМУЛА ЗА КАЛКУЛИРАНЕ НА ЦЕНА
-**Местоположение:** `PricingServiceImpl.calculatePrice()`
-```java
-public BigDecimal calculatePrice(BigDecimal weight, boolean isOfficeDelivery) {
-    PricingConfig config = getActiveConfig();
+    /**
+     * Изчислява цената на пратка.
+     *
+     * ФОРМУЛА:
+     *   Цена = Базова цена + (Тегло × Цена на кг) + Такса за доставка
+     *
+     * Където:
+     *   - Базова цена: фиксирана сума за всяка пратка
+     *   - Тегло × Цена на кг: зависи от теглото
+     *   - Такса за доставка: 0 за офис, addressDeliveryFee за адрес
+     */
+    @Override
+    public BigDecimal calculatePrice(BigDecimal weight, boolean isOfficeDelivery) {
 
-    // Базова цена
-    BigDecimal total = config.getBasePrice();
+        // Взимаме активната конфигурация от базата данни
+        PricingConfig config = getActiveConfig();
 
-    // + Тегло × Цена на кг
-    total = total.add(weight.multiply(config.getPricePerKg()));
+        // Започваме с базовата цена
+        BigDecimal total = config.getBasePrice();
 
-    // + Такса за доставка до адрес (ако не е до офис)
-    if (!isOfficeDelivery) {
-        total = total.add(config.getAddressDeliveryFee());
+        // Добавяме: тегло × цена на кг
+        BigDecimal weightCost = weight.multiply(config.getPricePerKg());
+        total = total.add(weightCost);
+
+        // Добавяме такса за доставка до адрес (ако не е до офис)
+        if (!isOfficeDelivery) {
+            total = total.add(config.getAddressDeliveryFee());
+        }
+
+        // Закръгляме до 2 знака след десетичната точка
+        return total.setScale(2, RoundingMode.HALF_UP);
     }
 
-    // Закръгляне до 2 знака
-    return total.setScale(2, RoundingMode.HALF_UP);
+    /**
+     * Взима активната ценова конфигурация.
+     * Винаги има ТОЧНО ЕДНА активна конфигурация в базата.
+     */
+    private PricingConfig getActiveConfig() {
+        return pricingConfigRepository.findByActiveTrue()
+            .orElseThrow(() -> new InvalidDataException(
+                "Няма активна ценова конфигурация!"));
+    }
 }
 ```
 
-**Примерни изчисления:**
-```
-Конфигурация: basePrice=5.00, pricePerKg=2.00, addressFee=10.00
+### Примерни изчисления
 
-Пример 1: 5kg до офис
-Цена = 5.00 + (5 × 2.00) + 0 = 15.00 BGN
+Нека конфигурацията е:
+- `basePrice` = 5.00 лв
+- `pricePerKg` = 2.00 лв
+- `addressDeliveryFee` = 10.00 лв
 
-Пример 2: 5kg до адрес
-Цена = 5.00 + (5 × 2.00) + 10.00 = 25.00 BGN
+| Тегло | Дестинация | Изчисление | Резултат |
+|-------|------------|------------|----------|
+| 1 кг | Офис | 5.00 + (1 × 2.00) + 0 | **7.00 лв** |
+| 1 кг | Адрес | 5.00 + (1 × 2.00) + 10.00 | **17.00 лв** |
+| 5 кг | Офис | 5.00 + (5 × 2.00) + 0 | **15.00 лв** |
+| 5 кг | Адрес | 5.00 + (5 × 2.00) + 10.00 | **25.00 лв** |
+| 10 кг | Офис | 5.00 + (10 × 2.00) + 0 | **25.00 лв** |
+| 10 кг | Адрес | 5.00 + (10 × 2.00) + 10.00 | **35.00 лв** |
+| 0.5 кг | Офис | 5.00 + (0.5 × 2.00) + 0 | **6.00 лв** |
 
-Пример 3: 0.5kg до офис
-Цена = 5.00 + (0.5 × 2.00) + 0 = 6.00 BGN
+---
+
+## 4.5 ReportServiceImpl - Справки
+
+```java
+@Service
+@Transactional(readOnly = true)  // Оптимизация: само четене, без заключване
+public class ReportServiceImpl implements ReportService {
+
+    /**
+     * Изчислява общите приходи за период.
+     * ВАЖНО: Само DELIVERED пратки се броят като приход!
+     */
+    @Override
+    public RevenueResponse getRevenueReport(LocalDate startDate, LocalDate endDate) {
+
+        // Конвертираме датите към LocalDateTime (начало и край на деня)
+        LocalDateTime startDateTime = startDate.atStartOfDay();           // 00:00:00
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);           // 23:59:59
+
+        // Извикваме repository метода (SQL заявка)
+        BigDecimal totalRevenue = shipmentRepository
+            .calculateRevenueBetweenDates(startDateTime, endDateTime);
+
+        Long deliveredCount = shipmentRepository
+            .countDeliveredBetweenDates(startDateTime, endDateTime);
+
+        return new RevenueResponse(startDate, endDate, totalRevenue, deliveredCount);
+    }
+
+    /**
+     * Метрики за dashboard.
+     */
+    @Override
+    public DashboardMetricsResponse getDashboardMetrics() {
+        Long totalShipments = shipmentRepository.count();
+        Long pendingShipments = shipmentRepository.countInTransitShipments();  // REGISTERED + IN_TRANSIT
+        Long deliveredShipments = shipmentRepository.countByStatus(ShipmentStatus.DELIVERED);
+        BigDecimal totalRevenue = shipmentRepository.calculateTotalRevenue();
+
+        return new DashboardMetricsResponse(
+            totalShipments, pendingShipments, deliveredShipments, totalRevenue);
+    }
+}
 ```
 
 ---
 
-### 3.4 ReportService / ReportServiceImpl
+## 4.6 Таблица на всички Service методи
 
-**Интерфейс методи:**
-```java
-List<EmployeeResponse> getAllEmployeesReport();
-List<CustomerResponse> getAllCustomersReport();
-List<ShipmentResponse> getAllShipmentsReport();
-List<ShipmentResponse> getShipmentsByEmployeeReport(Long employeeId);
-List<ShipmentResponse> getPendingShipmentsReport();
-List<ShipmentResponse> getShipmentsSentByCustomerReport(Long customerId);
-List<ShipmentResponse> getShipmentsReceivedByCustomerReport(Long customerId);
-RevenueResponse getRevenueReport(LocalDate startDate, LocalDate endDate);
-DashboardMetricsResponse getDashboardMetrics();
-CustomerMetricsResponse getCustomerMetrics(Long customerId);
-```
-
-#### ИЗЧИСЛЯВАНЕ НА ПРИХОДИ
-**Местоположение:** `ReportServiceImpl.getRevenueReport()`
-```java
-public RevenueResponse getRevenueReport(LocalDate startDate, LocalDate endDate) {
-    LocalDateTime startDateTime = startDate.atStartOfDay();
-    LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
-
-    // САМО DELIVERED пратки се броят като приход!
-    BigDecimal totalRevenue = shipmentRepository
-        .calculateRevenueBetweenDates(startDateTime, endDateTime);
-
-    Long deliveredCount = shipmentRepository
-        .countDeliveredBetweenDates(startDateTime, endDateTime);
-
-    return new RevenueResponse(startDate, endDate, totalRevenue, deliveredCount);
-}
-```
-
-**Важно:** Само пратки със статус `DELIVERED` се включват в приходите!
+| Service | Метод | Описание |
+|---------|-------|----------|
+| **AuthService** | `register(request)` | Регистрира нов потребител |
+| | `login(request)` | Влизане и получаване на токен |
+| **ShipmentService** | `registerShipment(request, username)` | Регистрира нова пратка |
+| | `getShipmentById(id)` | Връща пратка по ID |
+| | `getAllShipments()` | Всички пратки |
+| | `getShipmentsByCustomerId(id)` | Пратки на клиент (подател ИЛИ получател) |
+| | `updateShipmentStatus(id, request)` | Променя статуса |
+| | `updateShipment(id, request)` | Обновява пратка |
+| | `deleteShipment(id)` | Изтрива пратка |
+| **PricingService** | `calculatePrice(weight, isOffice)` | Калкулира цена |
+| | `getActivePricingConfig()` | Текуща конфигурация |
+| | `updatePricingConfig(request)` | Обновява цените |
+| **ReportService** | `getRevenueReport(start, end)` | Приходи за период |
+| | `getDashboardMetrics()` | Метрики за dashboard |
+| | `getCustomerMetrics(id)` | Метрики за клиент |
+| **CompanyService** | CRUD операции | Управление на компании |
+| **OfficeService** | CRUD операции | Управление на офиси |
+| **EmployeeService** | CRUD операции | Управление на служители |
+| **CustomerService** | CRUD операции | Управление на клиенти |
 
 ---
 
-## 4. ХРАНИЛИЩА (Repositories)
+# 5. ХРАНИЛИЩА (Repositories) - ДОСТЪП ДО БАЗАТА ДАННИ
 
-**Местоположение:** `src/main/java/com/logistics/repository/`
+## 5.1 Какво е Repository?
 
-### 4.1 UserRepository
+**Repository** е като **библиотекар**:
+- Знае къде се намират книгите (данните)
+- Може да намери, добави или премахне книга
+- Не се интересува КОЙ иска книгата или ЗАЩО
+
+**Технически:** Repository е интерфейс, който наследява `JpaRepository` и предоставя методи за работа с базата данни.
+
+## 5.2 Как работи Spring Data JPA?
+
+Spring Data JPA е магия! Ти дефинираш САМО интерфейс, а Spring създава имплементацията автоматично.
+
+```java
+// Ти пишеш само това:
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
+}
+
+// Spring автоматично създава SQL:
+// SELECT * FROM users WHERE username = ?
+```
+
+## 5.3 Видове заявки
+
+### Тип 1: Автоматични (от JpaRepository)
+
 ```java
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String username);  // За автентикация
-    Optional<User> findByEmail(String email);        // За търсене
-    boolean existsByUsername(String username);        // Проверка за дубликат
-    boolean existsByEmail(String email);              // Проверка за дубликат
-    List<User> findByRole(Role role);                 // Филтриране по роля
+    // Тези методи идват БЕЗПЛАТНО от JpaRepository:
+
+    // SELECT * FROM users WHERE id = ?
+    Optional<User> findById(Long id);
+
+    // SELECT * FROM users
+    List<User> findAll();
+
+    // INSERT INTO users (...) VALUES (...)
+    // или UPDATE users SET ... WHERE id = ?
+    User save(User user);
+
+    // DELETE FROM users WHERE id = ?
+    void deleteById(Long id);
+
+    // SELECT COUNT(*) FROM users
+    long count();
+
+    // SELECT EXISTS(SELECT 1 FROM users WHERE id = ?)
+    boolean existsById(Long id);
 }
 ```
 
----
+### Тип 2: По конвенция (method naming)
 
-### 4.2 CompanyRepository
-```java
-public interface CompanyRepository extends JpaRepository<Company, Long> {
-    Optional<Company> findByRegistrationNumber(String registrationNumber);
-    Optional<Company> findByName(String name);
-    boolean existsByRegistrationNumber(String registrationNumber);  // Уникален номер
-}
-```
+Spring разбира какво искаш от ИМЕТО на метода!
 
----
-
-### 4.3 OfficeRepository
-```java
-public interface OfficeRepository extends JpaRepository<Office, Long> {
-    List<Office> findByCompanyId(Long companyId);  // Офиси на компания
-    List<Office> findByCity(String city);
-    List<Office> findByCountry(String country);
-    List<Office> findByNameContainingIgnoreCase(String name);  // Търсене
-}
-```
-
----
-
-### 4.4 EmployeeRepository
-```java
-public interface EmployeeRepository extends JpaRepository<Employee, Long> {
-    Optional<Employee> findByUserId(Long userId);
-
-    // CUSTOM QUERY - присъединяване на User таблицата
-    @Query("SELECT e FROM Employee e WHERE e.user.username = :username")
-    Optional<Employee> findByUsername(@Param("username") String username);
-
-    List<Employee> findByCompanyId(Long companyId);
-    List<Employee> findByEmployeeType(EmployeeType type);
-    List<Employee> findByOfficeId(Long officeId);
-    boolean existsByUserId(Long userId);  // Проверка за дубликат
-
-    // Default методи
-    default List<Employee> findAllCouriers() {
-        return findByEmployeeType(EmployeeType.COURIER);
-    }
-
-    default List<Employee> findAllOfficeStaff() {
-        return findByEmployeeType(EmployeeType.OFFICE_STAFF);
-    }
-}
-```
-
----
-
-### 4.5 CustomerRepository
 ```java
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
+
+    // findBy + FieldName → WHERE field_name = ?
     Optional<Customer> findByUserId(Long userId);
+    // SQL: SELECT * FROM customers WHERE user_id = ?
 
-    // CUSTOM QUERY
-    @Query("SELECT c FROM Customer c WHERE c.user.username = :username")
-    Optional<Customer> findByUsername(@Param("username") String username);
+    // findBy + Field + And + Field → WHERE field1 = ? AND field2 = ?
+    List<Customer> findByPhoneAndAddress(String phone, String address);
+    // SQL: SELECT * FROM customers WHERE phone = ? AND address = ?
 
-    @Query("SELECT c FROM Customer c WHERE c.user.email = :email")
-    Optional<Customer> findByEmail(@Param("email") String email);
-
+    // existsBy + Field → SELECT EXISTS(...)
     boolean existsByUserId(Long userId);
+    // SQL: SELECT EXISTS(SELECT 1 FROM customers WHERE user_id = ?)
+
+    // countBy + Field → SELECT COUNT(*)
+    long countByAddress(String address);
+    // SQL: SELECT COUNT(*) FROM customers WHERE address = ?
 }
 ```
 
----
+### Тип 3: Custom @Query (когато конвенцията не стига)
 
-### 4.6 ShipmentRepository (НАЙ-СЛОЖЕН)
+```java
+public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+
+    // Заявка с JOIN към друга таблица
+    @Query("SELECT e FROM Employee e WHERE e.user.username = :username")
+    Optional<Employee> findByUsername(@Param("username") String username);
+    // SQL: SELECT e.* FROM employees e
+    //      JOIN users u ON e.user_id = u.id
+    //      WHERE u.username = ?
+
+    // Заявка с агрегация
+    @Query("SELECT COUNT(e) FROM Employee e WHERE e.employeeType = :type")
+    long countByType(@Param("type") EmployeeType type);
+}
+```
+
+## 5.4 ShipmentRepository - Най-сложният
+
 ```java
 public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
-    // По служител, който е регистрирал
+    // ═══════════════════════════════════════════════════════════════════
+    // ПРОСТИ ЗАЯВКИ (по конвенция)
+    // ═══════════════════════════════════════════════════════════════════
+
+    // Пратки, регистрирани от служител
     List<Shipment> findByRegisteredById(Long employeeId);
+    // SQL: SELECT * FROM shipments WHERE registered_by_id = ?
 
-    // По подател
+    // Пратки, изпратени от клиент
     List<Shipment> findBySenderId(Long senderId);
+    // SQL: SELECT * FROM shipments WHERE sender_id = ?
 
-    // По получател
+    // Пратки, получени от клиент
     List<Shipment> findByRecipientId(Long recipientId);
+    // SQL: SELECT * FROM shipments WHERE recipient_id = ?
+
+    // Пратки по статус
+    List<Shipment> findByStatus(ShipmentStatus status);
+    // SQL: SELECT * FROM shipments WHERE status = ?
+
+    // Брой пратки по статус
+    Long countByStatus(ShipmentStatus status);
+    // SQL: SELECT COUNT(*) FROM shipments WHERE status = ?
+
+    // ═══════════════════════════════════════════════════════════════════
+    // СЛОЖНИ ЗАЯВКИ (с @Query)
+    // ═══════════════════════════════════════════════════════════════════
 
     // Пратки на клиент (подател ИЛИ получател)
     @Query("SELECT s FROM Shipment s WHERE s.sender.id = :customerId OR s.recipient.id = :customerId")
     List<Shipment> findByCustomerId(@Param("customerId") Long customerId);
+    // SQL: SELECT * FROM shipments WHERE sender_id = ? OR recipient_id = ?
 
-    // По статус
-    List<Shipment> findByStatus(ShipmentStatus status);
-
-    // Чакащи пратки (НЕ доставени)
+    // Чакащи пратки (НЕ доставени и НЕ отказани)
     @Query("SELECT s FROM Shipment s WHERE s.status != 'DELIVERED' AND s.status != 'CANCELLED'")
     List<Shipment> findAllPendingShipments();
 
-    // Доставени в период (за приходи)
+    // Доставени пратки за период
     @Query("SELECT s FROM Shipment s WHERE s.status = 'DELIVERED' " +
            "AND s.deliveredAt >= :startDate AND s.deliveredAt <= :endDate")
     List<Shipment> findDeliveredBetweenDates(
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate);
 
-    // ИЗЧИСЛЯВАНЕ НА ПРИХОДИ
+    // ═══════════════════════════════════════════════════════════════════
+    // ЗАЯВКИ ЗА ИЗЧИСЛЕНИЯ (връщат числа, не обекти)
+    // ═══════════════════════════════════════════════════════════════════
+
+    // ИЗЧИСЛЯВАНЕ НА ПРИХОДИ ЗА ПЕРИОД
+    // COALESCE връща 0 ако няма резултати (вместо NULL)
     @Query("SELECT COALESCE(SUM(s.price), 0) FROM Shipment s " +
            "WHERE s.status = 'DELIVERED' " +
            "AND s.deliveredAt >= :startDate AND s.deliveredAt <= :endDate")
     BigDecimal calculateRevenueBetweenDates(
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate);
+    // SQL: SELECT COALESCE(SUM(price), 0) FROM shipments
+    //      WHERE status = 'DELIVERED'
+    //      AND delivered_at >= ? AND delivered_at <= ?
 
-    // Броене
-    Long countByStatus(ShipmentStatus status);
-
-    @Query("SELECT COUNT(s) FROM Shipment s WHERE s.status = 'REGISTERED' OR s.status = 'IN_TRANSIT'")
-    Long countInTransitShipments();
-
-    // Общ приход
+    // ОБЩ ПРИХОД (само от доставени)
     @Query("SELECT COALESCE(SUM(s.price), 0) FROM Shipment s WHERE s.status = 'DELIVERED'")
     BigDecimal calculateTotalRevenue();
 
-    // Метрики за клиент
-    @Query("SELECT COALESCE(SUM(s.price), 0) FROM Shipment s WHERE s.sender.id = :senderId AND s.status = 'DELIVERED'")
-    BigDecimal calculateTotalSpentByCustomer(@Param("senderId") Long senderId);
+    // БРОЙ ПРАТКИ В ТРАНЗИТ
+    @Query("SELECT COUNT(s) FROM Shipment s WHERE s.status = 'REGISTERED' OR s.status = 'IN_TRANSIT'")
+    Long countInTransitShipments();
 
-    Long countBySenderId(Long senderId);
+    // ОБЩО ПОХАРЧЕНО ОТ КЛИЕНТ
+    @Query("SELECT COALESCE(SUM(s.price), 0) FROM Shipment s " +
+           "WHERE s.sender.id = :senderId AND s.status = 'DELIVERED'")
+    BigDecimal calculateTotalSpentByCustomer(@Param("senderId") Long senderId);
 }
 ```
 
----
+## 5.5 PricingConfigRepository
 
-### 4.7 PricingConfigRepository
 ```java
 public interface PricingConfigRepository extends JpaRepository<PricingConfig, Long> {
 
-    // Взимане на активната конфигурация
+    // Намери активната конфигурация (винаги има САМО една)
     Optional<PricingConfig> findByActiveTrue();
+    // SQL: SELECT * FROM pricing_config WHERE active = true
 
-    // Деактивиране на всички (при обновяване)
+    // Деактивирай ВСИЧКИ конфигурации
+    // @Modifying = това е UPDATE/DELETE заявка, не SELECT
     @Modifying
     @Query("UPDATE PricingConfig p SET p.active = false WHERE p.active = true")
     void deactivateAll();
+    // SQL: UPDATE pricing_config SET active = false WHERE active = true
 }
 ```
 
+**Защо deactivateAll()?**
+Когато обновяваме цените:
+1. Първо деактивираме старата конфигурация
+2. После създаваме нова активна конфигурация
+
+Така имаме история на цените и винаги ТОЧНО ЕДНА активна.
+
 ---
 
-## 5. DTO КЛАСОВЕ
+# 6. DTO КЛАСОВЕ - ПРЕНОС НА ДАННИ
 
-**Местоположение:** `src/main/java/com/logistics/dto/`
+## 6.1 Какво е DTO?
 
-### Защо използвам DTO (Data Transfer Objects)?
-1. **Сигурност** - не изпращам Entity директно (може да съдържа чувствителни данни)
-2. **Гъвкавост** - мога да форматирам данните различно за различни клиенти
-3. **Валидация** - анотациите за валидация са в Request DTO
-4. **Разделение** - Entity е за БД, DTO е за API
+**DTO (Data Transfer Object)** е като **пощенски плик**:
+- Съдържа само информацията, която искаме да изпратим
+- Не съдържа бизнес логика
+- Различен е от Entity (който е за базата данни)
 
-### 5.1 Auth DTOs (`auth/`)
+**Защо не изпращаме директно Entity?**
+1. **Сигурност** - Entity може да съдържа парола или други чувствителни данни
+2. **Гъвкавост** - Можем да форматираме данните различно за различни клиенти
+3. **Разделение** - Entity е за БД, DTO е за API
 
-**RegisterRequest.java:**
+## 6.2 Request vs Response DTO
+
+```
+Клиент изпраща:                    Сървър връща:
+┌──────────────────┐               ┌──────────────────┐
+│  ShipmentRequest │     →→→       │ ShipmentResponse │
+├──────────────────┤               ├──────────────────┤
+│ senderId: 1      │               │ id: 100          │
+│ recipientId: 2   │               │ senderId: 1      │
+│ weight: 5.0      │               │ senderName: "..." │
+│ deliveryAddress  │               │ recipientId: 2   │
+└──────────────────┘               │ recipientName    │
+                                   │ weight: 5.0      │
+                                   │ price: 15.00     │ ← Калкулирана!
+                                   │ status: REG...   │
+                                   │ registeredAt     │
+                                   └──────────────────┘
+```
+
+## 6.3 Примери за DTO класове
+
+### RegisterRequest.java
+
 ```java
+/**
+ * DTO за регистрация на нов потребител.
+ * Съдържа валидационни анотации.
+ */
 public class RegisterRequest {
-    @NotBlank(message = "Username is required")
-    @Size(min = 3, max = 50)
+
+    @NotBlank(message = "Потребителското име е задължително")
+    @Size(min = 3, max = 50, message = "Потребителското име трябва да е между 3 и 50 символа")
     private String username;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
+    @NotBlank(message = "Имейлът е задължителен")
+    @Email(message = "Невалиден формат на имейл")
     private String email;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
+    @NotBlank(message = "Паролата е задължителна")
+    @Size(min = 6, message = "Паролата трябва да е поне 6 символа")
     private String password;
 
-    @NotNull(message = "Role is required")
-    private Role role;
+    @NotNull(message = "Ролята е задължителна")
+    private Role role;  // EMPLOYEE или CUSTOMER
+
+    // Getters и Setters...
 }
 ```
 
-**LoginRequest.java:**
+### ShipmentRequest.java
+
 ```java
-public class LoginRequest {
-    @NotBlank private String username;
-    @NotBlank private String password;
-}
-```
-
-**AuthResponse.java:**
-```java
-public class AuthResponse {
-    private String token;      // JWT токен
-    private Long userId;
-    private String username;
-    private String email;
-    private Role role;
-}
-```
-
----
-
-### 5.2 Shipment DTOs (`shipment/`)
-
-**ShipmentRequest.java:**
-```java
+/**
+ * DTO за създаване/обновяване на пратка.
+ */
 public class ShipmentRequest {
-    @NotNull(message = "Sender ID is required")
+
+    @NotNull(message = "ID на подател е задължително")
     private Long senderId;
 
-    @NotNull(message = "Recipient ID is required")
+    @NotNull(message = "ID на получател е задължително")
     private Long recipientId;
 
-    private Long originOfficeId;  // Опционално
+    private Long originOfficeId;  // Опционално - взима се от служителя
 
-    @Size(max = 255)
-    private String deliveryAddress;  // ИЛИ това
+    // ВАЖНО: Едно от двете трябва да е попълнено!
+    @Size(max = 255, message = "Адресът не може да надвишава 255 символа")
+    private String deliveryAddress;    // За доставка до адрес
 
-    private Long deliveryOfficeId;   // ИЛИ това
+    private Long deliveryOfficeId;     // За доставка до офис
 
-    @NotNull(message = "Weight is required")
-    @DecimalMin(value = "0.01", message = "Weight must be at least 0.01 kg")
-    @DecimalMax(value = "10000.00", message = "Weight cannot exceed 10000 kg")
+    @NotNull(message = "Теглото е задължително")
+    @DecimalMin(value = "0.01", message = "Теглото трябва да е поне 0.01 кг")
+    @DecimalMax(value = "10000.00", message = "Теглото не може да надвишава 10000 кг")
     private BigDecimal weight;
 
     // Помощни методи
@@ -707,130 +1235,233 @@ public class ShipmentRequest {
 }
 ```
 
-**ShipmentResponse.java:**
+### ShipmentResponse.java
+
 ```java
+/**
+ * DTO за връщане на информация за пратка.
+ * Съдържа "разгънати" данни за удобство на клиента.
+ */
 public class ShipmentResponse {
+
     private Long id;
+
+    // Подател
     private Long senderId;
-    private String senderName;
+    private String senderName;      // Разгънато от Customer → User
+    private String senderEmail;
+
+    // Получател
     private Long recipientId;
     private String recipientName;
+    private String recipientEmail;
+
+    // Регистрирал
     private Long registeredById;
     private String registeredByName;
+
+    // Офиси
     private Long originOfficeId;
     private String originOfficeName;
+
+    // Дестинация
     private String deliveryAddress;
     private Long deliveryOfficeId;
     private String deliveryOfficeName;
+    private String destinationOfficeName;  // Alias за frontend
+
+    // Детайли
     private BigDecimal weight;
     private BigDecimal price;           // Калкулирана автоматично!
     private ShipmentStatus status;
+    private boolean deliverToAddress;   // Флаг за frontend
+
+    // Времена
     private LocalDateTime registeredAt;
     private LocalDateTime deliveredAt;
     private LocalDateTime updatedAt;
-    private boolean deliverToAddress;   // Флаг за frontend
 }
 ```
+
+## 6.4 Валидационни анотации
+
+| Анотация | Какво проверява | Пример |
+|----------|-----------------|--------|
+| `@NotNull` | Не е null | `private Long id;` |
+| `@NotBlank` | Не е null, не е празен стринг | `private String name;` |
+| `@Size(min, max)` | Дължина на стринг | `@Size(min=3, max=50)` |
+| `@Email` | Валиден формат на имейл | `@Email private String email;` |
+| `@Min(value)` | Минимална стойност (число) | `@Min(0) private int age;` |
+| `@Max(value)` | Максимална стойност (число) | `@Max(150) private int age;` |
+| `@DecimalMin` | Минимална стойност (BigDecimal) | `@DecimalMin("0.01")` |
+| `@DecimalMax` | Максимална стойност (BigDecimal) | `@DecimalMax("10000")` |
+| `@Pattern(regexp)` | Съответства на regex | `@Pattern(regexp="[0-9]+")` |
+| `@Past` | Дата в миналото | `@Past private LocalDate birthDate;` |
+| `@Future` | Дата в бъдещето | `@Future private LocalDate deadline;` |
 
 ---
 
-### 5.3 Report DTOs (`report/`)
+# 7. ENTITY КЛАСОВЕ - МОДЕЛЪТ НА ДАННИТЕ
 
-**RevenueResponse.java:**
-```java
-public class RevenueResponse {
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private BigDecimal totalRevenue;
-    private Long deliveredShipmentsCount;
-}
+## 7.1 Какво е Entity?
+
+**Entity** е като **чертеж на таблица** в базата данни:
+- Всяко поле = колона в таблицата
+- Всеки обект = ред в таблицата
+- Релациите показват връзките между таблиците
+
+## 7.2 Релации между Entity класовете
+
+```
+┌─────────────┐
+│    User     │ ← Потребител (за автентикация)
+├─────────────┤
+│ id          │
+│ username    │
+│ email       │
+│ password    │
+│ role        │
+└──────┬──────┘
+       │
+       │ 1:1 (Един потребител е ИЛИ служител, ИЛИ клиент)
+       │
+       ├───────────────┬──────────────────┐
+       │               │                  │
+       ▼               ▼                  │
+┌─────────────┐  ┌─────────────┐          │
+│  Employee   │  │  Customer   │          │
+├─────────────┤  ├─────────────┤          │
+│ id          │  │ id          │          │
+│ user (FK)   │  │ user (FK)   │          │
+│ company (FK)│  │ phone       │          │
+│ office (FK) │  │ address     │          │
+│ employeeType│  └──────┬──────┘          │
+│ hireDate    │         │                 │
+│ salary      │         │ 1:M             │
+└──────┬──────┘         │                 │
+       │                │                 │
+       │                ▼                 │
+       │         ┌─────────────┐          │
+       │         │  Shipment   │◄─────────┘
+       │         ├─────────────┤    1:M (регистрирал)
+       │         │ id          │
+       └────────►│ sender (FK) │
+  1:M (регист.)  │ recipient   │
+                 │ registeredBy│
+                 │ originOffice│
+                 │ deliveryAddr│
+                 │ deliveryOff │
+                 │ weight      │
+                 │ price       │
+                 │ status      │
+                 └─────────────┘
+
+┌─────────────┐        ┌─────────────┐
+│   Company   │ 1:M    │   Office    │
+├─────────────┤───────►├─────────────┤
+│ id          │        │ id          │
+│ name        │        │ company (FK)│
+│ regNumber   │        │ name        │
+│ address     │        │ address     │
+└─────────────┘        │ city        │
+                       │ country     │
+                       └─────────────┘
+
+┌─────────────────┐
+│ PricingConfig   │ ← Конфигурация на цените
+├─────────────────┤
+│ id              │
+│ basePrice       │
+│ pricePerKg      │
+│ addressDelFee   │
+│ active          │
+└─────────────────┘
 ```
 
-**DashboardMetricsResponse.java:**
+## 7.3 User.java - Детайлно обяснение
+
 ```java
-public class DashboardMetricsResponse {
-    private Long totalShipments;
-    private Long pendingShipments;    // REGISTERED + IN_TRANSIT
-    private Long deliveredShipments;
-    private BigDecimal totalRevenue;  // Само от DELIVERED
-}
-```
-
----
-
-## 6. ENTITY КЛАСОВЕ
-
-**Местоположение:** `src/main/java/com/logistics/model/entity/`
-
-### 6.1 User.java
-```java
-@Entity
-@Table(name = "users")
+@Entity                          // Казва на JPA: "Това е Entity клас"
+@Table(name = "users")           // Името на таблицата в БД
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id                                              // Първичен ключ
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Auto-increment
     private Long id;
 
-    @NotBlank
-    @Size(min = 3, max = 50)
-    @Column(unique = true, nullable = false)
+    @NotBlank                    // Валидация: не може да е празно
+    @Size(min = 3, max = 50)     // Валидация: 3-50 символа
+    @Column(unique = true, nullable = false)  // DB constraint: уникално, не NULL
     private String username;
 
     @NotBlank
-    @Email
+    @Email                       // Валидация: валиден email формат
     @Column(unique = true, nullable = false)
     private String email;
 
     @NotBlank
     @Column(nullable = false)
-    private String password;  // BCrypt криптирана
+    private String password;     // BCrypt криптирана парола
 
     @NotNull
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING) // Запазва enum като текст ('EMPLOYEE', 'CUSTOMER')
     @Column(nullable = false)
     private Role role;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // Релации
+    // ═══════════════════════════════════════════════════════════════════
+    // РЕЛАЦИИ
+    // ═══════════════════════════════════════════════════════════════════
+
+    // Един User има ЕДИН Employee (или нищо)
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Employee employee;
 
+    // Един User има ЕДИН Customer (или нищо)
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Customer customer;
 
-    @PrePersist
+    // ═══════════════════════════════════════════════════════════════════
+    // LIFECYCLE CALLBACKS
+    // ═══════════════════════════════════════════════════════════════════
+
+    @PrePersist  // Извиква се ПРЕДИ запис в БД
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
 
-    @PreUpdate
+    @PreUpdate   // Извиква се ПРЕДИ обновяване в БД
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 }
 ```
 
----
+## 7.4 Shipment.java - Най-важният Entity
 
-### 6.2 Shipment.java (НАЙ-ВАЖЕН)
 ```java
 @Entity
 @Table(name = "shipments")
 public class Shipment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Подател
+    // ═══════════════════════════════════════════════════════════════════
+    // РЕЛАЦИИ - КОЙ УЧАСТВА В ПРАТКАТА
+    // ═══════════════════════════════════════════════════════════════════
+
+    // Подател (клиент, който изпраща)
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)  // Много пратки от един подател
     @JoinColumn(name = "sender_id", nullable = false)
     private Customer sender;
 
-    // Получател
+    // Получател (клиент, който получава)
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipient_id", nullable = false)
@@ -842,27 +1473,40 @@ public class Shipment {
     @JoinColumn(name = "registered_by_id", nullable = false)
     private Employee registeredBy;
 
-    // Офис на произход (опционален)
+    // ═══════════════════════════════════════════════════════════════════
+    // ОФИСИ
+    // ═══════════════════════════════════════════════════════════════════
+
+    // Офис, от който е изпратена (опционално)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "origin_office_id")
     private Office originOffice;
 
-    // ВЗАИМНО ИЗКЛЮЧВАЩИ СЕ полета за дестинация
-    @Column(name = "delivery_address")
-    private String deliveryAddress;  // За доставка до адрес
+    // ═══════════════════════════════════════════════════════════════════
+    // ДЕСТИНАЦИЯ - ИЛИ АДРЕС, ИЛИ ОФИС (не и двете!)
+    // ═══════════════════════════════════════════════════════════════════
 
+    // За доставка до адрес
+    @Column(name = "delivery_address")
+    private String deliveryAddress;
+
+    // За доставка до офис
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_office_id")
-    private Office deliveryOffice;   // За доставка до офис
+    private Office deliveryOffice;
 
-    // Тегло - ВИНАГИ BigDecimal за парични стойности!
+    // ═══════════════════════════════════════════════════════════════════
+    // ДЕТАЙЛИ НА ПРАТКАТА
+    // ═══════════════════════════════════════════════════════════════════
+
+    // Тегло в килограми
     @NotNull
     @DecimalMin("0.01")
     @DecimalMax("10000.00")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal weight;
 
-    // Цена - калкулира се автоматично от PricingService
+    // Цена (калкулира се автоматично!)
     @NotNull
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
@@ -873,11 +1517,18 @@ public class Shipment {
     @Column(nullable = false)
     private ShipmentStatus status = ShipmentStatus.REGISTERED;
 
+    // ═══════════════════════════════════════════════════════════════════
+    // ВРЕМЕНА
+    // ═══════════════════════════════════════════════════════════════════
+
     private LocalDateTime registeredAt;
     private LocalDateTime deliveredAt;
     private LocalDateTime updatedAt;
 
-    // Помощни методи
+    // ═══════════════════════════════════════════════════════════════════
+    // ПОМОЩНИ МЕТОДИ
+    // ═══════════════════════════════════════════════════════════════════
+
     public boolean isOfficeDelivery() {
         return deliveryOffice != null;
     }
@@ -888,11 +1539,11 @@ public class Shipment {
 
     public String getDeliveryDestination() {
         if (isOfficeDelivery()) {
-            return "Office: " + deliveryOffice.getName();
+            return "Офис: " + deliveryOffice.getName();
         } else if (isAddressDelivery()) {
-            return "Address: " + deliveryAddress;
+            return "Адрес: " + deliveryAddress;
         }
-        return "Not specified";
+        return "Не е посочено";
     }
 
     public boolean isDelivered() {
@@ -902,360 +1553,607 @@ public class Shipment {
     public boolean isCancelled() {
         return status == ShipmentStatus.CANCELLED;
     }
-}
-```
 
----
-
-### 6.3 PricingConfig.java
-```java
-@Entity
-@Table(name = "pricing_config")
-public class PricingConfig {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(precision = 10, scale = 2)
-    private BigDecimal basePrice;         // Базова цена за пратка
-
-    @Column(precision = 10, scale = 2)
-    private BigDecimal pricePerKg;        // Цена на килограм
-
-    @Column(precision = 10, scale = 2)
-    private BigDecimal addressDeliveryFee; // Такса за доставка до адрес
-
-    @Column(nullable = false)
-    private Boolean active = true;         // Само една активна!
-
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
-}
-```
-
----
-
-## 7. ENUM КЛАСОВЕ
-
-**Местоположение:** `src/main/java/com/logistics/model/enums/`
-
-### 7.1 Role.java
-```java
-public enum Role {
-    EMPLOYEE,   // Пълен достъп до системата
-    CUSTOMER    // Ограничен достъп - само собствени пратки
-}
-```
-
-### 7.2 EmployeeType.java
-```java
-public enum EmployeeType {
-    COURIER,       // Доставчик
-    OFFICE_STAFF   // Офис служител
-}
-```
-
-### 7.3 ShipmentStatus.java
-```java
-public enum ShipmentStatus {
-    REGISTERED,  // Регистрирана (начално състояние)
-    IN_TRANSIT,  // В транзит
-    DELIVERED,   // Доставена (финално - брои се като приход)
-    CANCELLED    // Отказана (финално - без приход)
-}
-```
-
----
-
-## 8. ПОМОЩНИ КЛАСОВЕ (Utilities)
-
-**Местоположение:** `src/main/java/com/logistics/util/`
-
-### 8.1 EntityMapper.java
-```java
-public final class EntityMapper {
-
-    // Приватен конструктор - utility клас
-    private EntityMapper() {}
-
-    public static CompanyResponse toCompanyResponse(Company company) {
-        // Конвертиране Company -> CompanyResponse
+    @PrePersist
+    protected void onCreate() {
+        registeredAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
-    public static OfficeResponse toOfficeResponse(Office office) {
-        // Включва име на компанията
-    }
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
 
-    public static EmployeeResponse toEmployeeResponse(Employee employee) {
-        // Обработва nullable company/office
-    }
-
-    public static CustomerResponse toCustomerResponse(Customer customer) {
-        // Конвертиране Customer -> CustomerResponse
-    }
-
-    public static ShipmentResponse toShipmentResponse(Shipment shipment) {
-        // Най-сложен - включва всички свързани данни
-        // Имена на подател, получател, офиси и т.н.
+        // Ако статусът е DELIVERED, запиши времето
+        if (status == ShipmentStatus.DELIVERED && deliveredAt == null) {
+            deliveredAt = LocalDateTime.now();
+        }
     }
 }
 ```
 
-**Защо използвам отделен Mapper клас?**
-- **Single Responsibility** - само за конвертиране
-- **Централизирана логика** - на едно място
-- **Null-safe** - обработва липсващи данни
-- **Лесно за тестване**
+## 7.5 Защо BigDecimal за пари?
 
----
-
-## 9. ЧЕСТО ЗАДАВАНИ ВЪПРОСИ И ОТГОВОРИ
-
-### Q1: Къде са заявките към базата данни?
-**Отговор:** В Repository интерфейсите в папка `src/main/java/com/logistics/repository/`
-
-**Видове заявки:**
-1. **Автоматични от Spring Data JPA:**
-   ```java
-   findById(), findAll(), save(), deleteById()
-   ```
-
-2. **По конвенция (method naming):**
-   ```java
-   findByUsername(String username)
-   findByCompanyId(Long companyId)
-   existsByEmail(String email)
-   ```
-
-3. **Custom @Query:**
-   ```java
-   @Query("SELECT e FROM Employee e WHERE e.user.username = :username")
-   Optional<Employee> findByUsername(@Param("username") String username);
-
-   @Query("SELECT COALESCE(SUM(s.price), 0) FROM Shipment s WHERE s.status = 'DELIVERED'")
-   BigDecimal calculateTotalRevenue();
-   ```
-
----
-
-### Q2: Имам ли валидация на данните? Къде?
-
-**Отговор:** Да, на няколко нива:
-
-| Ниво | Местоположение | Примери |
-|------|----------------|---------|
-| **DTO валидация** | Request класове | `@NotNull`, `@Email`, `@Size`, `@DecimalMin` |
-| **Entity валидация** | Entity класове | `@NotBlank`, `@Column(unique=true)` |
-| **Бизнес валидация** | Service имплементации | `validateDeliveryDestination()`, `validateWeight()`, `validateStatusTransition()` |
-| **Database constraints** | Entity анотации | `unique = true`, `nullable = false` |
-
-**Пример за валидация в ShipmentRequest:**
-```java
-@NotNull(message = "Sender ID is required")
-private Long senderId;
-
-@DecimalMin(value = "0.01", message = "Weight must be at least 0.01 kg")
-@DecimalMax(value = "10000.00", message = "Weight cannot exceed 10000 kg")
-private BigDecimal weight;
-```
-
----
-
-### Q3: Къде са стойностите на цените и как се калкулират?
-
-**Отговор:**
-
-**Къде се съхраняват:**
-- Entity: `PricingConfig.java`
-- Таблица в БД: `pricing_config`
-- Полета: `basePrice`, `pricePerKg`, `addressDeliveryFee`
-
-**Къде се калкулират:**
-- Файл: `PricingServiceImpl.java`
-- Метод: `calculatePrice(BigDecimal weight, boolean isOfficeDelivery)`
-
-**Формула:**
-```
-Цена = basePrice + (weight × pricePerKg) + deliveryFee
-
-Където deliveryFee = 0 за офис, addressDeliveryFee за адрес
-```
-
-**Кога се извиква:**
-- При регистрация: `ShipmentServiceImpl.registerShipment()`
-- При обновяване: `ShipmentServiceImpl.updateShipment()`
-
----
-
-### Q4: Как се определя кой до какво има достъп?
-
-**Отговор:** Чрез Role-Based Access Control (RBAC)
-
-**Нива на контрол:**
-
-1. **На ниво клас (всички методи):**
-   ```java
-   @RestController
-   @PreAuthorize("hasRole('EMPLOYEE')")
-   public class CompanyController { ... }
-   ```
-
-2. **На ниво метод:**
-   ```java
-   @PreAuthorize("hasRole('CUSTOMER') or hasRole('EMPLOYEE')")
-   public ResponseEntity<CustomerResponse> getCustomerByUserId(...) { ... }
-   ```
-
-3. **Програмно в кода:**
-   ```java
-   if (isCustomer(authentication)) {
-       Long customerId = getCustomerIdFromAuth(authentication);
-       if (!shipment.getSenderId().equals(customerId) &&
-           !shipment.getRecipientId().equals(customerId)) {
-           throw new UnauthorizedException(...);
-       }
-   }
-   ```
-
-**Матрица на достъпа:**
-
-| Ресурс | EMPLOYEE | CUSTOMER |
-|--------|----------|----------|
-| Companies CRUD | ✓ | ✗ |
-| Offices CRUD | ✓ | ✗ |
-| Employees CRUD | ✓ | ✗ |
-| Customers CRUD | ✓ | ✗ |
-| All Shipments | ✓ | Само свои |
-| Register Shipment | ✓ | ✗ |
-| Update Status | ✓ | ✗ |
-| Revenue Report | ✓ | ✗ |
-| Own Metrics | ✓ | ✓ |
-
----
-
-### Q5: Защо използвам BigDecimal вместо double за пари?
-
-**Отговор:**
 ```java
 // ГРЕШНО - double има проблеми с точността
-double price = 0.1 + 0.2;  // = 0.30000000000000004
+double price1 = 0.1;
+double price2 = 0.2;
+double total = price1 + price2;
+System.out.println(total);  // 0.30000000000000004  ← ГРЕШНО!
 
 // ПРАВИЛНО - BigDecimal е точен
-BigDecimal price = new BigDecimal("0.1").add(new BigDecimal("0.2"));  // = 0.3
+BigDecimal price1 = new BigDecimal("0.1");
+BigDecimal price2 = new BigDecimal("0.2");
+BigDecimal total = price1.add(price2);
+System.out.println(total);  // 0.3  ← ПРАВИЛНО!
 ```
 
-Използвам `BigDecimal` за всички парични стойности: `price`, `weight`, `basePrice`, `pricePerKg`, `addressDeliveryFee`, `salary`.
+**Правило:** Винаги използвай `BigDecimal` за пари, тегла и други стойности, които изискват точност!
 
----
+## 7.6 Какво е FetchType.LAZY?
 
-### Q6: Какво е @Transactional и защо го използвам?
-
-**Отговор:**
-```java
-@Transactional
-public ShipmentResponse registerShipment(...) {
-    // Всички операции в този метод са в една транзакция
-    // Ако нещо се провали - всичко се отменя (rollback)
-}
-
-@Transactional(readOnly = true)
-public List<ShipmentResponse> getAllShipmentsReport() {
-    // Оптимизация за четене - не се заключва за писане
-}
-```
-
----
-
-### Q7: Какво е LAZY loading и защо го използвам?
-
-**Отговор:**
 ```java
 @ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "sender_id")
 private Customer sender;
 ```
 
-**LAZY** означава, че `sender` се зарежда от БД само когато е нужен, не при всяко зареждане на Shipment. Това подобрява производителността.
+**LAZY** означава: "Не зареждай `sender` от базата данни, докато не го поискам."
+
+**Аналогия:** Като да кажеш на библиотекаря "Донеси ми книгата чак когато реша да я чета."
+
+**Защо е полезно:** Ако имаш 1000 пратки и искаш само ID-тата им, няма смисъл да зареждаш всички sender/recipient обекти.
 
 ---
 
-### Q8: Как работи JWT автентикацията?
+# 8. ENUM КЛАСОВЕ - ФИКСИРАНИ СТОЙНОСТИ
 
-**Отговор:**
-1. Потребител изпраща `username` и `password` към `/api/auth/login`
-2. Сървърът валидира credentials
-3. При успех - генерира JWT токен и го връща
-4. Клиентът изпраща токена в header при всяка заявка:
-   ```
-   Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
-   ```
-5. Сървърът валидира токена и определя кой е потребителят
+## 8.1 Какво е Enum?
 
----
+**Enum** е списък от **фиксирани, предварително дефинирани стойности**.
 
-### Q9: Защо приходите се броят само от DELIVERED пратки?
+**Аналогия:** Светофарът има само 3 цвята - ЧЕРВЕНО, ЖЪЛТО, ЗЕЛЕНО. Не може да е СИНЬО.
 
-**Отговор:** Защото:
-- `REGISTERED` - все още не е платена/доставена
-- `IN_TRANSIT` - все още не е завършена
-- `CANCELLED` - няма плащане
-- `DELIVERED` - успешно доставена и платена
+## 8.2 Role.java
 
 ```java
-@Query("SELECT COALESCE(SUM(s.price), 0) FROM Shipment s " +
-       "WHERE s.status = 'DELIVERED' ...")
+/**
+ * Роли на потребителите в системата.
+ * Определя какво може да прави потребителят.
+ */
+public enum Role {
+    EMPLOYEE,   // Служител - пълен достъп
+    CUSTOMER    // Клиент - ограничен достъп (само собствени пратки)
+}
+```
+
+**Къде се използва:**
+- При регистрация: `request.getRole()`
+- При проверка на достъп: `@PreAuthorize("hasRole('EMPLOYEE')")`
+
+## 8.3 EmployeeType.java
+
+```java
+/**
+ * Типове служители.
+ */
+public enum EmployeeType {
+    COURIER,       // Куриер - доставя пратки
+    OFFICE_STAFF   // Офис служител - обслужва клиенти на гише
+}
+```
+
+## 8.4 ShipmentStatus.java
+
+```java
+/**
+ * Статуси на пратка.
+ * Определя в какво състояние е пратката.
+ */
+public enum ShipmentStatus {
+    REGISTERED,  // Регистрирана - току-що създадена
+    IN_TRANSIT,  // В транзит - на път към получателя
+    DELIVERED,   // Доставена - успешно получена (ФИНАЛЕН)
+    CANCELLED    // Отказана - анулирана (ФИНАЛЕН)
+}
+```
+
+**Жизнен цикъл:**
+```
+Нова пратка
+     │
+     ▼
+REGISTERED ──────► IN_TRANSIT ──────► DELIVERED ✓
+     │                   │
+     │                   │
+     ▼                   ▼
+CANCELLED ✗         CANCELLED ✗
+```
+
+---
+
+# 9. ПОМОЩНИ КЛАСОВЕ
+
+## 9.1 EntityMapper.java
+
+**Какво прави:** Конвертира Entity обекти към DTO обекти.
+
+**Защо е нужен:**
+- Entity съдържа много повече информация (релации, lazy loading)
+- DTO съдържа само това, което искаме да покажем на клиента
+
+```java
+/**
+ * Помощен клас за конвертиране на Entity към DTO.
+ * Следва Single Responsibility Principle.
+ */
+public final class EntityMapper {
+
+    // Приватен конструктор - не може да се инстанцира
+    private EntityMapper() {}
+
+    /**
+     * Конвертира Shipment Entity към ShipmentResponse DTO.
+     */
+    public static ShipmentResponse toShipmentResponse(Shipment shipment) {
+        ShipmentResponse response = new ShipmentResponse();
+
+        // Основни полета
+        response.setId(shipment.getId());
+        response.setWeight(shipment.getWeight());
+        response.setPrice(shipment.getPrice());
+        response.setStatus(shipment.getStatus());
+
+        // Подател - "разгъваме" данните
+        response.setSenderId(shipment.getSender().getId());
+        response.setSenderName(shipment.getSender().getUser().getUsername());
+        response.setSenderEmail(shipment.getSender().getUser().getEmail());
+
+        // Получател
+        response.setRecipientId(shipment.getRecipient().getId());
+        response.setRecipientName(shipment.getRecipient().getUser().getUsername());
+        response.setRecipientEmail(shipment.getRecipient().getUser().getEmail());
+
+        // Служител (null-safe проверка)
+        if (shipment.getRegisteredBy() != null) {
+            response.setRegisteredById(shipment.getRegisteredBy().getId());
+            response.setRegisteredByName(shipment.getRegisteredBy().getUser().getUsername());
+        }
+
+        // Офиси (null-safe)
+        if (shipment.getOriginOffice() != null) {
+            response.setOriginOfficeId(shipment.getOriginOffice().getId());
+            response.setOriginOfficeName(shipment.getOriginOffice().getName());
+        }
+
+        // Дестинация
+        if (shipment.isOfficeDelivery()) {
+            response.setDeliveryOfficeId(shipment.getDeliveryOffice().getId());
+            response.setDeliveryOfficeName(shipment.getDeliveryOffice().getName());
+            response.setDeliverToAddress(false);
+        } else {
+            response.setDeliveryAddress(shipment.getDeliveryAddress());
+            response.setDeliverToAddress(true);
+        }
+
+        // Времена
+        response.setRegisteredAt(shipment.getRegisteredAt());
+        response.setDeliveredAt(shipment.getDeliveredAt());
+        response.setUpdatedAt(shipment.getUpdatedAt());
+
+        return response;
+    }
+
+    // Подобни методи за Company, Office, Employee, Customer...
+}
+```
+
+---
+
+# 10. СИГУРНОСТ И АВТЕНТИКАЦИЯ
+
+## 10.1 Как работи JWT автентикацията?
+
+**JWT (JSON Web Token)** е като **пропуск за концерт**:
+1. Купуваш билет (login) → получаваш пропуск (token)
+2. На всеки вход показваш пропуска
+3. Охраната проверява дали е истински
+4. Ако е валиден - пускат те
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                         ПРОЦЕС НА АВТЕНТИКАЦИЯ                         │
+└────────────────────────────────────────────────────────────────────────┘
+
+1. ВХОД (Login)
+   ┌─────────┐                              ┌─────────┐
+   │ Клиент  │ ──── POST /api/auth/login ──►│ Сървър  │
+   │         │      {username, password}    │         │
+   │         │◄──── {token: "eyJ..."}  ─────│         │
+   └─────────┘                              └─────────┘
+
+2. ЗАЩИТЕНА ЗАЯВКА (Authenticated Request)
+   ┌─────────┐                              ┌─────────┐
+   │ Клиент  │ ──── GET /api/shipments ────►│ Сървър  │
+   │         │      Header: Authorization:  │         │
+   │         │      Bearer eyJ...           │         │
+   │         │◄──── [списък с пратки] ──────│         │
+   └─────────┘                              └─────────┘
+
+3. НЕВАЛИДЕН/ЛИПСВАЩ ТОКЕН
+   ┌─────────┐                              ┌─────────┐
+   │ Клиент  │ ──── GET /api/shipments ────►│ Сървър  │
+   │         │      (без токен)             │         │
+   │         │◄──── 401 Unauthorized ───────│         │
+   └─────────┘                              └─────────┘
+```
+
+## 10.2 Какво съдържа JWT токенът?
+
+```
+eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb2huIiwicm9sZSI6IkVNUExPWUVFIiwiZXhwIjoxNzA0MDY3MjAwfQ.xyz
+
+       │                              │                                           │
+       ▼                              ▼                                           ▼
+   HEADER                          PAYLOAD                                   SIGNATURE
+   (алгоритъм)                    (данни)                                (подпис за валидация)
+
+PAYLOAD декодиран:
+{
+  "sub": "john",           ← username
+  "role": "EMPLOYEE",      ← роля
+  "exp": 1704067200        ← изтича на (Unix timestamp)
+}
+```
+
+## 10.3 @PreAuthorize анотации
+
+```java
+// Само EMPLOYEE има достъп
+@PreAuthorize("hasRole('EMPLOYEE')")
+
+// Само CUSTOMER има достъп
+@PreAuthorize("hasRole('CUSTOMER')")
+
+// EMPLOYEE или CUSTOMER
+@PreAuthorize("hasRole('EMPLOYEE') or hasRole('CUSTOMER')")
+
+// Всеки влязъл потребител
+@PreAuthorize("isAuthenticated()")
+
+// Само за конкретен потребител (по-сложно)
+@PreAuthorize("#username == authentication.name")
+```
+
+## 10.4 Матрица на достъпа
+
+| Ресурс | EMPLOYEE | CUSTOMER | Неавтентикиран |
+|--------|:--------:|:--------:|:--------------:|
+| Регистрация | - | - | ✓ |
+| Вход | - | - | ✓ |
+| Компании CRUD | ✓ | ✗ | ✗ |
+| Офиси CRUD | ✓ | ✗ | ✗ |
+| Служители CRUD | ✓ | ✗ | ✗ |
+| Клиенти CRUD | ✓ | ✗ | ✗ |
+| Регистрирай пратка | ✓ | ✗ | ✗ |
+| Виж всички пратки | ✓ | Само свои | ✗ |
+| Промени статус | ✓ | ✗ | ✗ |
+| Приходи | ✓ | ✗ | ✗ |
+| Dashboard | ✓ | ✗ | ✗ |
+| Клиентски метрики | ✓ | Само свои | ✗ |
+
+---
+
+# 11. ПЪЛЕН СПИСЪК С ВЪПРОСИ И ОТГОВОРИ
+
+## Въпрос 1: Къде са заявките към базата данни?
+
+**Отговор:**
+
+Заявките са в **Repository** файловете в папка `src/main/java/com/logistics/repository/`
+
+**3 типа заявки:**
+
+| Тип | Пример | Обяснение |
+|-----|--------|-----------|
+| **Автоматични** | `findById(1L)` | Идват от JpaRepository |
+| **По конвенция** | `findByUsername("john")` | Spring разбира от името |
+| **Custom @Query** | `@Query("SELECT...")` | Пишем ръчно JPQL |
+
+**Пример за custom query:**
+```java
+// Файл: ShipmentRepository.java
+@Query("SELECT COALESCE(SUM(s.price), 0) FROM Shipment s WHERE s.status = 'DELIVERED'")
+BigDecimal calculateTotalRevenue();
+```
+
+---
+
+## Въпрос 2: Имам ли валидация? Къде?
+
+**Отговор:**
+
+Да, на **3 нива:**
+
+| Ниво | Къде | Какво проверява | Пример |
+|------|------|-----------------|--------|
+| **DTO** | Request класове | Формат на входни данни | `@NotNull`, `@Email`, `@Size` |
+| **Service** | ServiceImpl | Бизнес правила | `validateWeight()`, `validateStatusTransition()` |
+| **Entity** | Entity класове | Database constraints | `@Column(unique=true)` |
+
+**Конкретни примери:**
+
+```java
+// DTO валидация (ShipmentRequest.java)
+@DecimalMin(value = "0.01", message = "Теглото трябва да е поне 0.01 кг")
+private BigDecimal weight;
+
+// Service валидация (ShipmentServiceImpl.java)
+private void validateDeliveryDestination(ShipmentRequest request) {
+    if (!hasAddress && !hasOffice) {
+        throw new InvalidDataException("Трябва да посочите дестинация");
+    }
+}
+
+// Entity валидация (User.java)
+@Column(unique = true, nullable = false)
+private String username;
+```
+
+---
+
+## Въпрос 3: Къде са цените и как се калкулират?
+
+**Отговор:**
+
+**Къде се съхраняват цените:**
+- **Таблица:** `pricing_config`
+- **Entity:** `PricingConfig.java` (`src/main/java/com/logistics/model/entity/`)
+- **Полета:** `basePrice`, `pricePerKg`, `addressDeliveryFee`
+
+**Къде се калкулират:**
+- **Файл:** `PricingServiceImpl.java`
+- **Метод:** `calculatePrice(BigDecimal weight, boolean isOfficeDelivery)`
+
+**Формула:**
+```
+Цена = Базова цена + (Тегло × Цена на кг) + Такса за адрес
+
+Такса за адрес:
+  - До офис: 0 лв
+  - До адрес: addressDeliveryFee (напр. 10 лв)
+```
+
+**Пример:**
+```
+Конфигурация: basePrice=5, pricePerKg=2, addressFee=10
+
+5 кг до офис:  5 + (5×2) + 0  = 15 лв
+5 кг до адрес: 5 + (5×2) + 10 = 25 лв
+```
+
+---
+
+## Въпрос 4: Как се определя кой има достъп до какво?
+
+**Отговор:**
+
+Чрез **Role-Based Access Control (RBAC):**
+
+**Стъпка 1:** При регистрация се задава роля (EMPLOYEE или CUSTOMER)
+
+**Стъпка 2:** При всяка заявка се проверява ролята:
+```java
+@PreAuthorize("hasRole('EMPLOYEE')")  // Само служители
+@PreAuthorize("hasRole('CUSTOMER')")  // Само клиенти
+@PreAuthorize("hasRole('EMPLOYEE') or hasRole('CUSTOMER')")  // И двете
+```
+
+**Стъпка 3:** За по-фина проверка (напр. клиент да вижда само своите пратки):
+```java
+// В ShipmentController.java
+if (isCustomer(authentication)) {
+    Long customerId = getCustomerIdFromAuth(authentication);
+    if (!shipment.getSenderId().equals(customerId) &&
+        !shipment.getRecipientId().equals(customerId)) {
+        throw new UnauthorizedException("Нямате достъп");
+    }
+}
+```
+
+---
+
+## Въпрос 5: Защо използвам интерфейс + имплементация за Service?
+
+**Отговор:**
+
+Това е **Dependency Inversion Principle (DIP)** от SOLID.
+
+**Аналогия:** Представи си, че имаш контакт (интерфейс) в стената. Можеш да включиш различни уреди (имплементации) - лампа, телевизор, зарядно. Контактът не се интересува КОЙ уред е включен.
+
+**Ползи:**
+1. **Лесна смяна** - можем да сменим имплементацията без да променяме контролерите
+2. **Тестване** - можем да използваме mock обекти
+3. **Разделение** - контролерът знае КАКВО може да прави service, не КАК го прави
+
+```java
+// Controller зависи от ИНТЕРФЕЙСА, не от имплементацията
+@RestController
+public class ShipmentController {
+    private final ShipmentService shipmentService;  // Интерфейс!
+
+    // Spring автоматично инжектира ShipmentServiceImpl
+}
+```
+
+---
+
+## Въпрос 6: Какво е @Transactional?
+
+**Отговор:**
+
+`@Transactional` казва: "Всички операции в този метод са ЕДНА транзакция."
+
+**Аналогия:** Като банков превод - или се изпълнява ЦЕЛИЯТ, или НИЩО. Не може да вземеш пари от едната сметка, но да не стигнат до другата.
+
+```java
+@Transactional
+public ShipmentResponse registerShipment(...) {
+    // 1. Създай пратка
+    // 2. Запиши в БД
+    // 3. Ако стъпка 2 се провали → стъпка 1 се отменя
+}
+```
+
+**@Transactional(readOnly = true):**
+Оптимизация за методи, които само ЧЕТАТ данни. Базата не заключва записите за писане.
+
+---
+
+## Въпрос 7: Защо само DELIVERED пратки се броят като приход?
+
+**Отговор:**
+
+Защото само доставените пратки са **реално платени**:
+
+| Статус | Парите платени ли са? | Брои ли се като приход? |
+|--------|:---------------------:|:-----------------------:|
+| REGISTERED | Не | Не |
+| IN_TRANSIT | Не | Не |
+| DELIVERED | Да | **Да** |
+| CANCELLED | Не | Не |
+
+```java
+// В ShipmentRepository.java
+@Query("SELECT SUM(s.price) FROM Shipment s WHERE s.status = 'DELIVERED' ...")
 BigDecimal calculateRevenueBetweenDates(...);
 ```
 
 ---
 
-### Q10: Какво е Cascade и защо го използвам?
+## Въпрос 8: Какво е LAZY loading?
 
 **Отговор:**
+
+**LAZY** = "Зареди данните ЧРЕЗ когато ги поискам"
+**EAGER** = "Зареди данните ВЕДНАГА"
+
 ```java
-@OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
-private List<Office> offices;
+@ManyToOne(fetch = FetchType.LAZY)
+private Customer sender;
 ```
 
-`CascadeType.ALL` означава, че когато запазя/изтрия Company, автоматично се запазват/изтриват и свързаните Office записи.
+**Аналогия:** Като меню в ресторант:
+- EAGER: Поръчваш пица и веднага ти носят целия списък със съставки, доставчици, ферми...
+- LAZY: Поръчваш пица и получаваш пицата. Ако попиташ "откъде е сиренето?" - тогава ти казват.
+
+**Защо LAZY е по-добре:**
+- По-малко заявки към БД
+- По-малко памет
+- По-бързо зареждане
 
 ---
 
-## БЪРЗИ СПРАВКИ
+## Въпрос 9: Какво прави EntityMapper?
 
-### Местоположение на ключови функционалности:
+**Отговор:**
 
-| Функционалност | Файл | Метод/Място |
-|----------------|------|-------------|
-| Регистрация | `AuthServiceImpl.java` | `register()` |
-| Вход | `AuthServiceImpl.java` | `login()` |
-| Валидация на тегло | `ShipmentServiceImpl.java` | `validateWeight()` |
-| Валидация на дестинация | `ShipmentServiceImpl.java` | `validateDeliveryDestination()` |
-| Валидация на статус | `ShipmentServiceImpl.java` | `validateStatusTransition()` |
-| Калкулиране на цена | `PricingServiceImpl.java` | `calculatePrice()` |
-| Приходи | `ReportServiceImpl.java` | `getRevenueReport()` |
-| Заявка за приходи | `ShipmentRepository.java` | `calculateRevenueBetweenDates()` |
-| Контрол на достъп | Контролери | `@PreAuthorize` анотации |
-| Entity → DTO | `EntityMapper.java` | `toXxxResponse()` методи |
+EntityMapper конвертира **Entity** към **DTO**.
 
----
+**Защо е нужно:**
+1. Entity има много повече данни (релации, lazy fields)
+2. DTO съдържа само това, което искаме да покажем
+3. Entity има анотации за БД, DTO има анотации за API
 
-## СЪВЕТИ ЗА ИЗПИТА
+```java
+// Entity (от БД)
+Shipment shipment = shipmentRepository.findById(1L);
+// shipment.getSender() → Customer обект
+// shipment.getRecipient() → Customer обект
+// ... много релации
 
-1. **Знай къде се намира всеки компонент** - контролер, сървис, repository
-2. **Обясни защо използваш слоеста архитектура** - разделение на отговорностите
-3. **Покажи валидациите** - DTO, Entity, Service нива
-4. **Обясни SOLID принципите** - SRP, OCP, DIP
-5. **Знай формулата за цената** и къде се калкулира
-6. **Разбирай статус преходите** на пратките
-7. **Обясни разликата между EMPLOYEE и CUSTOMER** достъп
-8. **Знай защо BigDecimal** за пари
-9. **Покажи custom queries** в repositories
-10. **Обясни JWT автентикацията** накратко
+// DTO (за API)
+ShipmentResponse response = EntityMapper.toShipmentResponse(shipment);
+// response.getSenderName() → "Иван Иванов" (просто текст)
+// response.getRecipientName() → "Мария Петрова"
+// ... само нужните полета
+```
 
 ---
 
-*Документ създаден за подготовка за изпит по проект "Logistics Management System"*
+## Въпрос 10: Как се променя статусът на пратка?
+
+**Отговор:**
+
+Чрез `PATCH /api/shipments/{id}/status` endpoint.
+
+**Стъпки:**
+1. Controller получава заявката
+2. Извиква `ShipmentService.updateShipmentStatus()`
+3. Service валидира прехода (`validateStatusTransition()`)
+4. Ако е валиден - обновява и записва
+
+**Валидни преходи:**
+```
+REGISTERED → IN_TRANSIT ✓
+REGISTERED → CANCELLED ✓
+IN_TRANSIT → DELIVERED ✓
+IN_TRANSIT → CANCELLED ✓
+DELIVERED → (нищо) ✗ (финален)
+CANCELLED → (нищо) ✗ (финален)
+```
+
+---
+
+# 12. БЪРЗИ СПРАВКИ
+
+## 12.1 Къде се намира какво?
+
+| Търсиш... | Файл/Папка |
+|-----------|------------|
+| REST endpoints | `controller/` |
+| Бизнес логика | `service/impl/` |
+| SQL заявки | `repository/` |
+| Валидация на вход | DTO Request класове |
+| Бизнес валидации | Service методи (validateXxx) |
+| Модел на данни | `model/entity/` |
+| Калкулиране на цена | `PricingServiceImpl.calculatePrice()` |
+| Контрол на достъп | `@PreAuthorize` в контролерите |
+| Статуси на пратка | `ShipmentStatus.java` |
+| Роли на потребители | `Role.java` |
+
+## 12.2 Важни методи
+
+| Метод | Къде | Какво прави |
+|-------|------|-------------|
+| `register()` | AuthServiceImpl | Регистрира потребител |
+| `login()` | AuthServiceImpl | Вход и JWT токен |
+| `registerShipment()` | ShipmentServiceImpl | Създава пратка |
+| `calculatePrice()` | PricingServiceImpl | Калкулира цена |
+| `validateDeliveryDestination()` | ShipmentServiceImpl | Проверява дестинация |
+| `validateWeight()` | ShipmentServiceImpl | Проверява тегло |
+| `validateStatusTransition()` | ShipmentServiceImpl | Проверява преход |
+| `calculateRevenueBetweenDates()` | ShipmentRepository | SQL за приходи |
+| `toShipmentResponse()` | EntityMapper | Entity → DTO |
+
+## 12.3 Формула за цена
+
+```
+ЦЕНА = basePrice + (weight × pricePerKg) + deliveryFee
+
+Където:
+  deliveryFee = 0           (ако е до офис)
+  deliveryFee = addressFee  (ако е до адрес)
+```
+
+## 12.4 Статуси на пратка
+
+```
+REGISTERED ──► IN_TRANSIT ──► DELIVERED (край, брои се като приход)
+     │              │
+     └──► CANCELLED ◄──┘ (край, НЕ се брои като приход)
+```
+
+---
+
+*Документ създаден за подготовка за изпит*
+*Последна актуализация: Януари 2025*

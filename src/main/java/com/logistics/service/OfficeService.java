@@ -7,11 +7,6 @@ import java.util.List;
 
 /**
  * Service interface for Office operations.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Only handles office-related business logic.
- * - Interface Segregation (ISP): Contains only methods relevant to offices.
- * - Dependency Inversion (DIP): Controllers depend on this interface.
  */
 public interface OfficeService {
 

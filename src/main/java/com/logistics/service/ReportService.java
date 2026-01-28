@@ -13,13 +13,6 @@ import java.util.List;
 /**
  * Service interface for generating reports.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): This interface only handles report generation.
- *   It doesn't handle CRUD operations - those are in dedicated services.
- * - Interface Segregation (ISP): Contains only report-related methods.
- *   CRUD operations remain in their respective service interfaces.
- * - Dependency Inversion (DIP): Controllers depend on this interface.
- *
  * Available Reports:
  * 1. All employees
  * 2. All customers

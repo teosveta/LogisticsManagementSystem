@@ -9,9 +9,6 @@ import java.time.LocalDateTime;
 /**
  * DTO for employee responses.
  *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only employee data transfer for output.
- *
  * Note: Salary is BigDecimal for monetary precision.
  */
 public class EmployeeResponse {

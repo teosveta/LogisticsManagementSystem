@@ -16,15 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * REST Controller for employee management.
- *
- * SOLID Principles Applied:
- * - Single Responsibility (SRP): Handles only employee-related HTTP endpoints.
- * - Dependency Inversion (DIP): Depends on EmployeeService interface.
- *
- * Access: EMPLOYEE role only (employee management is administrative).
- */
 @RestController
 @RequestMapping("/api/employees")
 @Tag(name = "Employees", description = "Employee management endpoints")
